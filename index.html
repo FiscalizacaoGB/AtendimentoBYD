@@ -1671,7 +1671,7 @@ body.pdsel .toasts { bottom: 90px; }
     <div class="seg pd-seg" id="pdSeg"></div>
     <div class="filtros" id="pdTurnos"></div>
     <p class="pd-dica hidden" id="pdDica"><i data-ic="whats"></i><span>Marque até 10 pendências (ou use <b>Marcar do dia</b>), escolha quem recebe e clique em
-      <b>Enviar WhatsApp</b>: vai tudo numa mensagem só, e elas ficam como TRATADO.</span></p>
+      <b>Enviar WhatsApp</b>: vai tudo numa mensagem só, e elas ficam como TRATADO. Cada pessoa recebe no máximo 10 a cada 4 horas.</span></p>
     <div class="pd-lista" id="pdLista"></div>
     <datalist id="pdInstrutores"></datalist>
     <p class="hz-nota"><i data-ic="alert"></i><span>As pendências vêm do relatório que o Apps Script dos motoristas gera todo dia à meia-noite
@@ -3221,8 +3221,20 @@ function atualizarSelecaoPd() {
   document.body.classList.toggle("pdsel", mostrar);
   if (!n) return;
   document.getElementById("pdQtd").textContent = n + (n === 1 ? " pendência marcada" : " pendências marcadas");
-  document.getElementById("pdLim").textContent = n >= PD_MAX_ENVIO ? "limite de " + PD_MAX_ENVIO + " por mensagem" : "até " + PD_MAX_ENVIO + " por mensagem";
-  document.getElementById("pdLim").classList.toggle("cheio", n >= PD_MAX_ENVIO);
+  desenharDestinoPd(); // refaz as vagas de cada pessoa (as de 4 horas atrás vão liberando)
+  const ins = (pd.cadastro || [])[pdPessoa];
+  const v = ins && vagasDe(ins);
+  const lim = document.getElementById("pdLim");
+  if (ins && n > v.sobra) {
+    lim.textContent = v.sobra
+      ? primeiroNome(ins.nome) + " só pode receber mais " + v.sobra + " agora"
+      : primeiroNome(ins.nome) + " já recebeu " + limitePd().porPessoa + " nas últimas " + limitePd().horas + "h, libera às " + horaCurta(v.ativos[v.recebidas - limitePd().porPessoa]);
+  } else if (ins) {
+    lim.textContent = primeiroNome(ins.nome) + " pode receber mais " + v.sobra + " (limite " + limitePd().porPessoa + " a cada " + limitePd().horas + "h)";
+  } else {
+    lim.textContent = n >= PD_MAX_ENVIO ? "limite de " + PD_MAX_ENVIO + " por mensagem" : "até " + PD_MAX_ENVIO + " por mensagem";
+  }
+  lim.classList.toggle("cheio", n >= PD_MAX_ENVIO || !!(ins && n > v.sobra));
   const temCadastro = !!(pd.cadastro || []).length;
   document.getElementById("pdEnviar").innerHTML = ic("whats") + "Enviar WhatsApp" + (n > 1 ? " (" + n + ")" : "");
   document.getElementById("pdEnviar").classList.toggle("hidden", !temCadastro);
@@ -3230,23 +3242,54 @@ function atualizarSelecaoPd() {
   document.getElementById("pdSo").className = temCadastro ? "bl-sec" : "bl-ok";
 }
 
+/* ---------- Limite por pessoa (LIMITE_POR_PESSOA a cada LIMITE_HORAS do Atendimento.gs) ---------- */
+function limitePd() {
+  return Object.assign({ porPessoa: 10, horas: 4 }, pd.limite || {});
+}
+
+/* Quantas a pessoa ainda pode receber agora e quando abre a próxima vaga */
+function vagasDe(ins) {
+  const ativos = (ins.liberam || []).filter(ms => ms > Date.now()).sort((a, b) => a - b);
+  return { sobra: Math.max(limitePd().porPessoa - ativos.length, 0), recebidas: ativos.length, ativos };
+}
+
+function horaCurta(ms) {
+  const d = new Date(ms);
+  return String(d.getHours()).padStart(2, "0") + ":" + String(d.getMinutes()).padStart(2, "0");
+}
+
+/* Texto do bloqueio, igual ao que o Apps Script devolve */
+function avisoLimite(ins, quantas) {
+  const v = vagasDe(ins), lim = limitePd();
+  if (quantas <= v.sobra) return "";
+  const libera = horaCurta(v.ativos[v.recebidas + quantas - lim.porPessoa - 1]);
+  return ins.nome + " já recebeu " + v.recebidas + (v.recebidas === 1 ? " pendência" : " pendências") +
+    " nas últimas " + lim.horas + " horas (limite de " + lim.porPessoa + ")." + (v.sobra
+      ? " Dá para enviar mais " + v.sobra + " agora" + (quantas > 1 ? ", ou as " + quantas + " a partir das " + libera : "") + "."
+      : " Pode enviar " + (quantas === 1 ? "de novo" : "as " + quantas) + " a partir das " + libera + ".");
+}
+
 /* Campo "Enviar para": lista de instrutores e orientadores (ou nome digitado, sem cadastro) */
 function desenharDestinoPd() {
   const cad = pd.cadastro || [];
   const caixa = document.getElementById("pdPara");
   if (!cad.length) {
-    caixa.innerHTML = `<input id="pdNome" list="pdInstrutores" maxlength="80" placeholder="Nome do instrutor" aria-label="Instrutor que recebeu as pendências"
-      value="${esc(pdPessoa)}" oninput="pdPessoa = this.value; this.classList.remove('campo-erro')">`;
+    if (!document.getElementById("pdNome")) {
+      caixa.innerHTML = `<input id="pdNome" list="pdInstrutores" maxlength="80" placeholder="Nome do instrutor" aria-label="Instrutor que recebeu as pendências"
+        value="${esc(pdPessoa)}" oninput="pdPessoa = this.value; this.classList.remove('campo-erro')">`;
+    }
     return;
   }
   if (!cad[pdPessoa]) pdPessoa = "";
   const grupos = {};
   cad.forEach((x, k) => {
+    const v = vagasDe(x);
+    const rotulo = v.sobra ? (v.recebidas ? " · pode receber mais " + v.sobra : "") : " · limite até " + horaCurta(v.ativos[v.recebidas - limitePd().porPessoa]);
     const g = x.funcao || "Outros";
-    (grupos[g] = grupos[g] || []).push(`<option value="${k}" ${String(k) === pdPessoa ? "selected" : ""}>${esc(x.nome)}</option>`);
+    (grupos[g] = grupos[g] || []).push(`<option value="${k}" ${String(k) === pdPessoa ? "selected" : ""}>${esc(x.nome + rotulo)}</option>`);
   });
   caixa.innerHTML = `
-    <select id="pdPessoa" aria-label="Quem recebe as pendências" onchange="pdPessoa = this.value; this.classList.remove('campo-erro')">
+    <select id="pdPessoa" aria-label="Quem recebe as pendências" onchange="pdPessoa = this.value; this.classList.remove('campo-erro'); atualizarSelecaoPd()">
       <option value="">Enviar para…</option>
       ${Object.keys(grupos).map(g => `<optgroup label="${esc(pluralFuncao(g))}">${grupos[g].join("")}</optgroup>`).join("")}
     </select>`;
@@ -3285,17 +3328,35 @@ function textoWhats(lista, ins) {
   return linhas.join("\n");
 }
 
-function abrirWhats(ins, lista) {
+function urlWhats(ins, lista) {
   const link = linkWhats(ins.telefone);
-  if (!link) {
-    toast("O telefone de " + ins.nome + " não parece válido (" + ins.telefone + "). Confira o cadastro.", "alert", true);
-    return false;
-  }
-  window.open(link + "?text=" + encodeURIComponent(textoWhats(lista, ins)), "_blank", "noopener");
-  return true;
+  if (!link) toast("O telefone de " + ins.nome + " não parece válido (" + ins.telefone + "). Confira o cadastro.", "alert", true);
+  return link ? link + "?text=" + encodeURIComponent(textoWhats(lista, ins)) : "";
 }
 
-/* Botões da barra: abre o WhatsApp com todas as marcadas (ou não) e grava TRATADO em todas */
+/* A aba do WhatsApp abre já no clique (senão o navegador bloqueia) e só recebe a mensagem depois que o
+   Apps Script confirma o limite e grava o TRATADO; se ele recusar, a aba fecha */
+function abrirJanelaWhats() {
+  const w = window.open("", "_blank");
+  if (w) {
+    try {
+      w.document.title = "WhatsApp";
+      w.document.body.innerHTML = '<p style="font:16px system-ui,sans-serif;padding:24px;color:#334155">Abrindo o WhatsApp…</p>';
+    } catch (e) {}
+  }
+  return w;
+}
+
+function irParaWhats(janela, url) {
+  if (janela && !janela.closed) {
+    try { janela.opener = null; } catch (e) {}
+    janela.location.href = url;
+  } else if (confirm("O navegador bloqueou a nova aba. Abrir o WhatsApp nesta aba?")) {
+    location.href = url;
+  }
+}
+
+/* Botões da barra: confere o limite, grava TRATADO em todas e abre o WhatsApp com as que foram gravadas */
 function enviarSelecaoPd(comWhats) {
   const lista = selecionadasPd();
   if (!lista.length) return;
@@ -3311,6 +3372,9 @@ function enviarSelecaoPd(comWhats) {
       return;
     }
     nome = ins.nome;
+    const aviso = avisoLimite(ins, lista.length);
+    if (aviso) { toast(aviso, "alert", true); return; }
+    if (comWhats && !linkWhats(ins.telefone)) { urlWhats(ins, lista); return; }
   } else {
     nome = String(pdPessoa).trim();
     if (nome.length < 2) {
@@ -3321,8 +3385,8 @@ function enviarSelecaoPd(comWhats) {
       return;
     }
   }
-  // o WhatsApp abre antes de gravar, para o navegador não bloquear a nova aba
-  if (comWhats && !abrirWhats(ins, lista)) return;
+  const janela = comWhats ? abrirJanelaWhats() : null;
+  const fecharJanela = () => { if (janela && !janela.closed) janela.close(); };
   const botoes = ["pdEnviar", "pdSo"].map(b => document.getElementById(b));
   botoes.forEach(b => { b.disabled = true; });
 
@@ -3331,40 +3395,48 @@ function enviarSelecaoPd(comWhats) {
     itens: lista.map(p => ({ id: p.id, data: p.data, roteiro: p.roteiro }))
   })
     .then(r => {
-      if (r.senha === false) { sair(); return; }
-      if (!r.ok) throw new Error(r.erro === "Ação desconhecida."
-        ? "O Apps Script publicado ainda é o anterior. Faça Implantar > Gerenciar implantações > Editar > Versão: Nova versão."
-        : r.erro || "Não foi possível gravar.");
-      const outros = [];
+      if (r.senha === false) { fecharJanela(); sair(); return; }
+      if (!r.ok) {
+        if (r.limite) carregarPendencias(false, true); // outro operador enviou nesse meio tempo: atualiza as vagas
+        throw new Error(r.erro === "Ação desconhecida."
+          ? "O Apps Script publicado ainda é o anterior. Faça Implantar > Gerenciar implantações > Editar > Versão: Nova versão."
+          : r.erro || "Não foi possível gravar.");
+      }
+      const gravadas = [], outros = [];
       r.itens.forEach((x, k) => {
         const p = lista[k];
         pdSel.delete(p.id);
         if (x.ok || x.jaTratado) {
           Object.assign(p, { id: x.id, instrutor: x.instrutor || p.instrutor, tratado: true, tratadoPor: x.tratadoPor, tratadoEm: x.tratadoEm });
         }
-        if (!x.ok) outros.push(p.roteiro + (x.jaTratado ? " (já tratada por " + (x.tratadoPor || "outra pessoa") + ")" : ""));
+        if (x.ok) gravadas.push(p);
+        else outros.push(p.roteiro + (x.jaTratado ? " (já tratada por " + (x.tratadoPor || "outra pessoa") + ")" : ""));
       });
+      if (ins) gravadas.forEach(() => (ins.liberam = ins.liberam || []).push(Date.now() + limitePd().horas * 36e5));
+      if (comWhats && gravadas.length) irParaWhats(janela, urlWhats(ins, gravadas));
+      else fecharJanela();
       if (nome && pd.instrutores.indexOf(nome) === -1) {
         pd.instrutores.push(nome);
         pd.instrutores.sort();
         document.getElementById("pdInstrutores").innerHTML = pd.instrutores.map(n => `<option value="${esc(n)}">`).join("");
       }
       desenharPendencias(true);
-      const ok = r.tratados;
+      const ok = gravadas.length;
       if (ok) toast(comWhats
         ? (ok === 1 ? "1 pendência enviada" : ok + " pendências enviadas") + " para " + nome
         : (ok === 1 ? "1 pendência marcada" : ok + " pendências marcadas") + " como TRATADO (" + nome + ")", "check");
       if (outros.length) toast("Não marcadas: " + outros.join("; "), "alert", true);
     })
-    .catch(err => toast(err.message, "alert", true))
+    .catch(err => { fecharJanela(); toast(err.message, "alert", true); })
     .finally(() => botoes.forEach(b => { b.disabled = false; }));
 }
 
-/* Abre de novo a mensagem de uma pendência já tratada (para o mesmo instrutor) */
+/* Abre de novo a mensagem de uma pendência já tratada (para o mesmo instrutor; não conta no limite) */
 function reenviarWhats(id) {
   const p = pd && pd.itens.find(x => x.id === id);
   const ins = p && pessoaDoCadastro(p.instrutor);
-  if (ins) abrirWhats(ins, [p]);
+  const url = ins && urlWhats(ins, [p]);
+  if (url) window.open(url, "_blank", "noopener");
 }
 
 function desfazerPendencia(id) {
@@ -3377,6 +3449,7 @@ function desfazerPendencia(id) {
       Object.assign(p, { id: r.id, instrutor: "", tratado: false, tratadoPor: "", tratadoEm: "" });
       desenharPendencias(true);
       toast("TRATADO desfeito", "refresh");
+      carregarPendencias(false, true); // devolve a vaga no limite da pessoa
     })
     .catch(err => toast(err.message, "alert", true));
 }
