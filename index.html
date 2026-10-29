@@ -1065,7 +1065,15 @@ body.lote .toasts { bottom: 90px; }
 
 @media (max-width: 640px) {
   .vistas { width: 100%; }
-  .vistas button { flex: 1; padding: 9px 8px; font-size: 13px; }
+  .vistas button { flex: 1; padding: 9px 6px; font-size: 13px; gap: 4px; }
+  .so-largo { display: none; }
+  .vistas button .ic { display: none; }
+  .btn-csv { flex: 0 0 auto !important; }
+  .hz-dia { width: 100%; }
+  .hz-data { flex: 1; min-width: 0; padding: 0; }
+  .hz-data .ic { display: none; }
+  .hz-data input { width: 100%; min-width: 0; font-size: 14px; }
+  .hz-busca { min-width: 0; flex: 1 1 100%; }
 }
 
 /* HORÁRIOS DOS ROTEIROS */
@@ -1107,12 +1115,171 @@ body.lote .toasts { bottom: 90px; }
   background: transparent;
 }
 
-.hz-dia .hz-hoje {
+.hz-ate { color: var(--suave); font-size: 13px; }
+
+.hz-atalhos { display: flex; gap: 6px; flex-wrap: wrap; }
+.hz-atalhos .chip { padding: 7px 12px; }
+
+.btn-csv {
+  background: #fff;
+  color: var(--azul);
+  border: 1px solid var(--borda);
   font-size: 13px;
-  padding: 7px 12px;
+  font-weight: bold;
+  padding: 9px 12px;
 }
 
-.hz-dia .hz-hoje.ativo { background: var(--cinza); color: var(--suave); }
+.btn-csv:disabled { opacity: .45; cursor: default; }
+
+.chip-opcao { border-style: dashed; }
+.kpi-de { font-size: 14px; color: var(--suave); }
+
+/* período: tabela */
+.hz-grade.hz-modo-tabela { display: block; }
+
+.hz-tabela {
+  background: #fff;
+  border: 1px solid var(--borda);
+  border-radius: 14px;
+  overflow: hidden;
+}
+
+.hz-tl {
+  display: grid;
+  grid-template-columns: 70px minmax(180px, 1.6fr) 90px 110px minmax(120px, 1.2fr) 124px;
+  gap: 10px;
+  align-items: center;
+  width: 100%;
+  padding: 9px 14px;
+  text-align: left;
+  background: #fff;
+  color: var(--texto);
+  border-radius: 0;
+  border-bottom: 1px solid var(--borda);
+  border-left: 4px solid var(--cor-st, transparent);
+  font-size: 14px;
+}
+
+.hz-tl:hover { background: #f8fafc; }
+.hz-tl:last-child { border-bottom: none; }
+
+.hz-tl.cab {
+  background: var(--cinza);
+  font-size: 11px;
+  font-weight: bold;
+  color: var(--suave);
+  text-transform: uppercase;
+  letter-spacing: .4px;
+  cursor: default;
+}
+
+.hz-tl .c-data { font-weight: bold; color: var(--azul); }
+.hz-tl .c-data small { display: block; font-size: 11px; font-weight: normal; color: var(--suave); }
+.hz-tl .c-rot { display: flex; align-items: center; gap: 8px; min-width: 0; font-weight: bold; }
+.hz-tl .c-rot .n { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.hz-tl .c-h { font-size: 17px; font-weight: bold; font-variant-numeric: tabular-nums; }
+.hz-tl .c-h.falta { color: #cbd5e1; }
+.hz-tl .c-h em { font-style: normal; font-size: 10px; color: #7c3aed; margin-left: 3px; }
+.hz-tl .c-vm { font-size: 12px; color: var(--suave); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.hz-tl .rot-st { justify-self: start; }
+
+.hz-mais { padding: 12px; text-align: center; color: var(--suave); font-size: 13px; }
+
+@media (max-width: 760px) {
+  .hz-tl {
+    grid-template-columns: 1fr 1fr;
+    grid-template-areas: "data st" "rot rot" "che fim" "vm vm";
+    gap: 4px 10px;
+  }
+  .hz-tl.cab { display: none; }
+  .hz-tl .c-data { grid-area: data; }
+  .hz-tl .c-data small { display: inline; margin-left: 4px; }
+  .hz-tl .rot-st { grid-area: st; justify-self: end; }
+  .hz-tl .c-rot { grid-area: rot; }
+  .hz-tl .c-che { grid-area: che; }
+  .hz-tl .c-fim { grid-area: fim; }
+  .hz-tl .c-vm { grid-area: vm; }
+  .hz-tl .c-h::before { content: attr(data-r); display: block; font-size: 11px; font-weight: normal; color: var(--suave); }
+}
+
+/* PENDÊNCIAS */
+.pd-aviso {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  background: #fff7ed;
+  border: 1px solid #fed7aa;
+  color: #7c2d12;
+  border-radius: 12px;
+  padding: 10px 12px;
+  font-size: 14px;
+  margin-bottom: 14px;
+}
+
+.pd-aviso button { margin-left: auto; background: #c2410c; font-size: 13px; padding: 7px 12px; }
+.pd-seg { margin-bottom: 10px; }
+
+.pd-grupo { margin-bottom: 16px; }
+
+.pd-grupo h4 {
+  margin: 0 0 8px;
+  font-size: 14px;
+  color: var(--azul);
+}
+
+.pd-grupo h4 small { color: var(--suave); font-weight: normal; font-size: 12px; margin-left: 4px; }
+
+.pd-item {
+  background: #fff;
+  border: 1px solid var(--borda);
+  border-left: 4px solid var(--cor-f);
+  border-radius: 12px;
+  padding: 10px 12px;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 10px 14px;
+  flex-wrap: wrap;
+  animation: subir .25s ease-out both;
+}
+
+.pd-item.tratado { border-left-color: var(--verde); background: #fbfefc; }
+.pd-lista.parada .pd-item { animation: none; }
+
+.pd-info { flex: 1 1 340px; min-width: 0; display: flex; align-items: center; gap: 10px; }
+.pd-txt { flex: 1; min-width: 0; }
+.pd-txt strong { display: block; font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pd-txt small { color: var(--suave); font-size: 12px; }
+
+.pd-falta {
+  flex: 0 0 auto;
+  font-size: 12px;
+  font-weight: bold;
+  color: var(--cor-f);
+  background: var(--fundo-f);
+  border-radius: 10px;
+  padding: 4px 9px;
+  white-space: nowrap;
+}
+
+.pd-item.tratado .pd-falta { opacity: .55; }
+
+.pd-acao { flex: 1 1 320px; display: flex; align-items: center; justify-content: flex-end; gap: 8px; }
+.pd-instrutor { flex: 1; max-width: 260px; padding: 9px 11px; font-size: 14px; }
+.pd-btn { background: var(--verde); font-weight: bold; font-size: 13px; padding: 10px 14px; letter-spacing: .4px; }
+
+.pd-feito { display: flex; align-items: center; gap: 8px; color: var(--verde); font-size: 13px; text-align: right; }
+.pd-feito small { display: block; color: var(--suave); font-size: 11px; font-weight: normal; }
+.pd-desfazer { background: transparent; color: var(--suave); text-decoration: underline; font-size: 12px; padding: 4px 6px; }
+
+@media (max-width: 640px) {
+  .pd-info { flex-wrap: wrap; }
+  .pd-acao { justify-content: stretch; }
+  .pd-instrutor { max-width: none; }
+  .pd-feito { text-align: left; flex: 1; }
+  .btn-csv { flex: 1; }
+}
 
 .hz-busca { flex: 1; min-width: 240px; }
 
@@ -1351,7 +1518,8 @@ body.lote .toasts { bottom: 90px; }
 
   <div class="vistas" role="tablist">
     <button class="ativo" data-vista="chamados" onclick="mostrarVista('chamados')"><i data-ic="inbox"></i>Chamados <span class="badge-vista" id="badgeChamados"></span></button>
-    <button data-vista="horarios" onclick="mostrarVista('horarios')"><i data-ic="bus"></i>Horários dos roteiros</button>
+    <button data-vista="horarios" onclick="mostrarVista('horarios')"><i data-ic="bus"></i>Horários<span class="so-largo">dos roteiros</span></button>
+    <button data-vista="pendencias" onclick="mostrarVista('pendencias')"><i data-ic="alert"></i>Pendências <span class="badge-vista" id="badgePendencias"></span></button>
   </div>
 
   <div id="vistaChamados">
@@ -1389,22 +1557,61 @@ body.lote .toasts { bottom: 90px; }
   <div id="vistaHorarios" class="hidden">
     <div class="hz-barra">
       <div class="hz-dia">
-        <button class="btn-icone" onclick="mudarDia(-1)" title="Dia anterior" aria-label="Dia anterior"><i data-ic="chevL"></i></button>
-        <label class="hz-data"><i data-ic="calendar"></i><input type="date" id="hzData" onchange="carregarHorarios()"></label>
-        <button class="btn-icone" onclick="mudarDia(1)" title="Próximo dia" aria-label="Próximo dia"><i data-ic="chevR"></i></button>
-        <button class="hz-hoje" id="hzHoje" onclick="irHoje()">Hoje</button>
+        <button class="btn-icone" onclick="andarPeriodo('hz', -1)" title="Período anterior" aria-label="Período anterior"><i data-ic="chevL"></i></button>
+        <label class="hz-data"><i data-ic="calendar"></i><input type="date" id="hzDe" aria-label="Data inicial" onchange="mudouPeriodo('hz', 'de')"></label>
+        <span class="hz-ate">até</span>
+        <label class="hz-data"><input type="date" id="hzAte" aria-label="Data final" onchange="mudouPeriodo('hz', 'ate')"></label>
+        <button class="btn-icone" onclick="andarPeriodo('hz', 1)" title="Próximo período" aria-label="Próximo período"><i data-ic="chevR"></i></button>
+      </div>
+      <div class="hz-atalhos">
+        <button class="chip" data-atalho="hz:0,0" onclick="definirPeriodo('hz', 0, 0)">Hoje</button>
+        <button class="chip" data-atalho="hz:-1,-1" onclick="definirPeriodo('hz', -1, -1)">Ontem</button>
+        <button class="chip" data-atalho="hz:-6,0" onclick="definirPeriodo('hz', -6, 0)">7 dias</button>
+        <button class="chip" data-atalho="hz:-29,0" onclick="definirPeriodo('hz', -29, 0)">30 dias</button>
       </div>
       <div class="busca hz-busca">
         <i data-ic="search"></i>
-        <input type="search" id="hzBusca" list="hzRoteiros" placeholder="Roteiro, motorista ou veículo" oninput="desenharHorarios()">
+        <input type="search" id="hzBusca" list="hzRoteiros" placeholder="Roteiro, motorista ou veículo" oninput="desenharHorarios(true)">
         <datalist id="hzRoteiros"></datalist>
       </div>
+      <button class="btn-csv" id="hzCsv" onclick="baixarHorarios()" disabled><i data-ic="download"></i><span class="so-largo">Baixar</span>CSV</button>
     </div>
     <div class="kpis" id="hzKpis"></div>
     <div class="filtros" id="hzTurnos"></div>
     <div class="hz-grade" id="hzGrade"></div>
     <p class="hz-nota"><i data-ic="alert"></i><span>A chegada e a finalização são juntadas por viagem: a finalização que vem depois da chegada, até 20 horas depois.
       Por isso a finalização do Turno 2, que acontece depois da meia-noite, aparece com a chegada do dia anterior, marcada com "+1 dia".</span></p>
+  </div>
+
+  <!-- PENDÊNCIAS (aba "relátorio" da planilha "Controle de chegada e saída") -->
+  <div id="vistaPendencias" class="hidden">
+    <div class="hz-barra">
+      <div class="hz-dia">
+        <button class="btn-icone" onclick="andarPeriodo('pd', -1)" title="Período anterior" aria-label="Período anterior"><i data-ic="chevL"></i></button>
+        <label class="hz-data"><i data-ic="calendar"></i><input type="date" id="pdDe" aria-label="Data inicial" onchange="mudouPeriodo('pd', 'de')"></label>
+        <span class="hz-ate">até</span>
+        <label class="hz-data"><input type="date" id="pdAte" aria-label="Data final" onchange="mudouPeriodo('pd', 'ate')"></label>
+        <button class="btn-icone" onclick="andarPeriodo('pd', 1)" title="Próximo período" aria-label="Próximo período"><i data-ic="chevR"></i></button>
+      </div>
+      <div class="hz-atalhos">
+        <button class="chip" data-atalho="pd:-1,-1" onclick="definirPeriodo('pd', -1, -1)">Ontem</button>
+        <button class="chip" data-atalho="pd:-7,-1" onclick="definirPeriodo('pd', -7, -1)">7 dias</button>
+        <button class="chip" data-atalho="pd:-30,-1" onclick="definirPeriodo('pd', -30, -1)">30 dias</button>
+      </div>
+      <div class="busca hz-busca">
+        <i data-ic="search"></i>
+        <input type="search" id="pdBusca" placeholder="Roteiro ou instrutor" oninput="desenharPendencias(true)">
+      </div>
+      <button class="btn-csv" id="pdCsv" onclick="baixarPendencias()" disabled><i data-ic="download"></i><span class="so-largo">Baixar</span>CSV</button>
+    </div>
+    <div class="pd-aviso hidden" id="pdAntes"></div>
+    <div class="kpis" id="pdKpis"></div>
+    <div class="seg pd-seg" id="pdSeg"></div>
+    <div class="filtros" id="pdTurnos"></div>
+    <div class="pd-lista" id="pdLista"></div>
+    <datalist id="pdInstrutores"></datalist>
+    <p class="hz-nota"><i data-ic="alert"></i><span>As pendências vêm do relatório que o Apps Script dos motoristas gera todo dia à meia-noite
+      (roteiros sem chegada e/ou sem encerramento no dia anterior). O TRATADO e o instrutor ficam gravados no próprio relatório.</span></p>
   </div>
 </main>
 
@@ -1484,6 +1691,7 @@ const ICONES = {
   calendar: '<rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/>',
   factory: '<path d="M2 20a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V8l-7 5V8l-7 5V4a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z"/><path d="M17 18h1M12 18h1M7 18h1"/>',
   flag: '<path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><path d="M4 22v-7"/>',
+  download: '<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5"/><path d="M12 15V3"/>',
   hash: '<path d="M4 9h16M4 15h16M10 3 8 21M16 3l-2 18"/>',
   text: '<path d="M4 6h16M4 12h16M4 18h10"/>',
   send: '<path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/>',
@@ -1618,11 +1826,11 @@ function abrirPainel() {
     (h < 12 ? "Bom dia" : h < 18 ? "Boa tarde" : "Boa noite") + ", " + operador.split(" ")[0] + "!";
   mostrarEsqueleto();
   carregar(false);
-  if (location.hash === "#horarios") mostrarVista("horarios");
+  if (location.hash === "#horarios" || location.hash === "#pendencias") mostrarVista(location.hash.slice(1));
   clearInterval(timer);
   timer = setInterval(() => {
     carregar(false, true);
-    if (vista === "horarios" && document.getElementById("hzData").value === hojeISO()) carregarHorarios(false, true);
+    if (vista === "horarios" && document.getElementById("hzAte").value >= hojeISO()) carregarHorarios(false, true);
   }, ATUALIZAR_A_CADA);
 }
 
@@ -2233,23 +2441,89 @@ function mostrarSucessoGaveta(c, quando) {
 
 /* ================= ABAS ================= */
 let vista = "chamados";
+const VISTAS = { chamados: "vistaChamados", horarios: "vistaHorarios", pendencias: "vistaPendencias" };
 
 function mostrarVista(v) {
   vista = v;
   document.querySelectorAll(".vistas button").forEach(b => b.classList.toggle("ativo", b.dataset.vista === v));
-  document.getElementById("vistaChamados").classList.toggle("hidden", v !== "chamados");
-  document.getElementById("vistaHorarios").classList.toggle("hidden", v !== "horarios");
+  Object.keys(VISTAS).forEach(n => document.getElementById(VISTAS[n]).classList.toggle("hidden", v !== n));
   if (v !== "chamados" && modoLote) alternarLote();
-  try { history.replaceState(null, "", v === "horarios" ? "#horarios" : location.pathname + location.search); } catch (e) {}
-  if (v === "horarios" && !hz) {
-    if (!document.getElementById("hzData").value) document.getElementById("hzData").value = hojeISO();
-    carregarHorarios();
-  }
+  try { history.replaceState(null, "", v === "chamados" ? location.pathname + location.search : "#" + v); } catch (e) {}
+  if (v === "horarios" && !hz) definirPeriodo("hz", 0, 0);
+  if (v === "pendencias" && !pd) definirPeriodo("pd", -1, -1);
 }
 
 function atualizar() {
   if (vista === "horarios") carregarHorarios(true);
+  else if (vista === "pendencias") carregarPendencias(true);
   else carregar(true);
+}
+
+/* ================= PERÍODO (Horários e Pendências) ================= */
+const MAX_DIAS = 31; // igual ao REGISTRO_MAX_DIAS do Atendimento.gs
+
+function isoDe(d) {
+  return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
+}
+function hojeISO() { return isoDe(new Date()); }
+function somaDias(iso, n) { const d = new Date(iso + "T12:00:00"); d.setDate(d.getDate() + n); return isoDe(d); }
+function diasEntre(a, b) { return Math.round((new Date(b + "T12:00:00") - new Date(a + "T12:00:00")) / 864e5); }
+function brDe(iso) { const p = iso.split("-"); return p[2] + "/" + p[1] + "/" + p[0]; }
+function isoDeBr(br) { const p = String(br).split("/"); return p.length === 3 ? p[2] + "-" + p[1] + "-" + p[0] : ""; }
+function diaSemana(br) { return ["dom", "seg", "ter", "qua", "qui", "sex", "sáb"][new Date(isoDeBr(br) + "T12:00:00").getDay()] || ""; }
+
+/* px = "hz" (horários) ou "pd" (pendências); ini e fim em dias contados de hoje (0 = hoje, -1 = ontem) */
+function definirPeriodo(px, ini, fim) {
+  document.getElementById(px + "De").value = somaDias(hojeISO(), ini);
+  document.getElementById(px + "Ate").value = somaDias(hojeISO(), fim);
+  recarregarPeriodo(px);
+}
+
+function mudouPeriodo(px, qual) {
+  const de = document.getElementById(px + "De"), ate = document.getElementById(px + "Ate");
+  if (!de.value) de.value = ate.value || hojeISO();
+  if (!ate.value) ate.value = de.value;
+  if (de.value > ate.value) { if (qual === "de") ate.value = de.value; else de.value = ate.value; }
+  if (diasEntre(de.value, ate.value) >= MAX_DIAS) {
+    if (qual === "de") ate.value = somaDias(de.value, MAX_DIAS - 1); else de.value = somaDias(ate.value, -(MAX_DIAS - 1));
+    toast("O período pode ter até " + MAX_DIAS + " dias.", "alert");
+  }
+  recarregarPeriodo(px);
+}
+
+/* setas: andam o tamanho do período (1 dia, 7 dias...) */
+function andarPeriodo(px, sentido) {
+  const de = document.getElementById(px + "De"), ate = document.getElementById(px + "Ate");
+  const n = (diasEntre(de.value, ate.value) + 1) * sentido;
+  de.value = somaDias(de.value, n);
+  ate.value = somaDias(ate.value, n);
+  recarregarPeriodo(px);
+}
+
+function recarregarPeriodo(px) {
+  const de = document.getElementById(px + "De").value, ate = document.getElementById(px + "Ate").value;
+  const h = hojeISO();
+  document.querySelectorAll(`[data-atalho^="${px}:"]`).forEach(b => {
+    const [ini, fim] = b.dataset.atalho.split(":")[1].split(",").map(Number);
+    b.classList.toggle("ativo", de === somaDias(h, ini) && ate === somaDias(h, fim));
+  });
+  if (px === "hz") carregarHorarios(); else carregarPendencias();
+}
+
+function baixarCsv(nome, cabecalho, linhas) {
+  const txt = "﻿" + [cabecalho].concat(linhas)
+    .map(l => l.map(x => '"' + String(x == null ? "" : x).replace(/"/g, '""') + '"').join(";")).join("\r\n");
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(new Blob([txt], { type: "text/csv;charset=utf-8" }));
+  a.download = nome;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+}
+
+function nomePeriodo(de, ate) {
+  return de.replace(/\//g, "-") + (de !== ate ? "_a_" + ate.replace(/\//g, "-") : "");
 }
 
 /* ================= HORÁRIOS DOS ROTEIROS ================= */
@@ -2264,50 +2538,37 @@ const HZ_ESTADOS = {
 };
 const HZ_HORAS_VIAGEM = 20;   // finalização até 20h depois da chegada é da mesma viagem
 const HZ_HORAS_REPETIDO = 3;  // mesmo registro repetido em até 3h conta como a mesma viagem
+const HZ_MAX_LINHAS = 600;    // linhas mostradas de uma vez no período (o CSV leva todas)
 
 let hz = null;              // resposta do Apps Script
-let hzRotas = [];           // roteiros do dia já montados
+let hzViagens = [];         // viagens montadas (chegada + finalização)
+let hzItens = [];           // um item por roteiro e dia
+let hzFiltrados = [];
 let hzTurno = "";
 let hzEstado = "";          // filtro pelos cartões do resumo
-
-function hojeISO() {
-  const d = new Date();
-  return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
-}
-
-function mudarDia(n) {
-  const campo = document.getElementById("hzData");
-  const d = campo.value ? new Date(campo.value + "T12:00:00") : new Date();
-  d.setDate(d.getDate() + n);
-  campo.value = d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
-  carregarHorarios();
-}
-
-function irHoje() {
-  document.getElementById("hzData").value = hojeISO();
-  carregarHorarios();
-}
+let hzSemRegistro = false;  // no período, mostrar também os dias sem registro
 
 function carregarHorarios(manual, silencioso) {
-  const campo = document.getElementById("hzData");
-  if (!campo.value) campo.value = hojeISO();
-  const pedido = campo.value;
-  document.getElementById("hzHoje").classList.toggle("ativo", pedido === hojeISO());
+  const deCampo = document.getElementById("hzDe"), ateCampo = document.getElementById("hzAte");
+  if (!deCampo.value) deCampo.value = hojeISO();
+  if (!ateCampo.value) ateCampo.value = deCampo.value;
+  const pedido = deCampo.value + "|" + ateCampo.value;
   const btn = document.getElementById("btnAtualizar");
   btn.classList.add("girando");
   if (!silencioso) {
     document.getElementById("hzGrade").innerHTML = '<div class="esqueleto"></div>'.repeat(6);
     document.getElementById("hzKpis").innerHTML = "";
   }
-  return chamarApi({ acao: "horariosRoteiros", data: pedido })
+  return chamarApi({ acao: "horariosRoteiros", de: deCampo.value, ate: ateCampo.value, data: deCampo.value })
     .then(r => {
       if (r.senha === false) { sair(); document.getElementById("erroLogin").textContent = r.erro; return; }
       if (!r.ok) throw new Error(r.erro === "Ação desconhecida."
         ? "O Apps Script publicado ainda não tem a consulta de horários. Faça Implantar > Gerenciar implantações > Editar > Versão: Nova versão."
         : r.erro || "Erro ao carregar os horários.");
-      if (document.getElementById("hzData").value !== pedido) return; // trocou de dia no meio do caminho
+      if (deCampo.value + "|" + ateCampo.value !== pedido) return; // trocou o período no meio do caminho
+      if (!r.de) { r.de = r.data; r.ate = r.data; }                // Apps Script antigo (só um dia)
       hz = r;
-      montarRotas();
+      montarItens();
       desenharHorarios(silencioso);
       if (manual) toast("Horários atualizados", "check");
     })
@@ -2375,7 +2636,7 @@ function montarViagens(registros) {
       }
     });
   });
-  viagens.forEach(v => { v.data = (v.chegada[0] || v.fim[0]).data; });
+  viagens.forEach(v => { v.data = (v.chegada[0] || v.fim[0]).data; v.ts = (v.chegada[0] || v.fim[0]).ts; });
   return viagens;
 }
 
@@ -2390,35 +2651,45 @@ function estadoViagem(v) {
   return Date.now() - v.chegada[0].ts < HZ_HORAS_VIAGEM * 36e5 ? "rota" : "semFim";
 }
 
-function montarRotas() {
-  const dia = hz.data;
-  const viagens = montarViagens(hz.registros || []);
-  const rotas = {};
-  const nova = nome => ({ chave: chaveRota(nome), nome, turno: turnoDe(nome), viagens: [], vizinhas: [] });
-  const ehFuturo = instante(dia, "00:00") > Date.now();
-  if (!ehFuturo) (hz.roteiros || []).forEach(nome => { rotas[chaveRota(nome)] = rotas[chaveRota(nome)] || nova(nome); });
-  viagens.forEach(v => {
+/* Um item por roteiro e por dia do período */
+function montarItens() {
+  hzViagens = montarViagens(hz.registros || []);
+  const dias = [];
+  for (let d = isoDeBr(hz.de); d && d <= isoDeBr(hz.ate); d = somaDias(d, 1)) dias.push(brDe(d));
+  const nomes = {};
+  (hz.roteiros || []).forEach(n => { nomes[chaveRota(n)] = n; });
+  const itens = {};
+  const novo = (nome, data) => ({ chave: chaveRota(nome), nome, turno: turnoDe(nome), data, viagens: [] });
+  hzViagens.forEach(v => {
+    if (dias.indexOf(v.data) === -1) return;
     const nome = (v.chegada[0] || v.fim[0]).roteiro;
-    if (v.data === dia) {
-      rotas[v.chave] = rotas[v.chave] || nova(nome);
-      rotas[v.chave].nome = nome;
-      rotas[v.chave].viagens.push(v);
-    }
+    const k = v.data + "|" + v.chave;
+    itens[k] = itens[k] || novo(nome, v.data);
+    itens[k].viagens.push(v);
+    nomes[v.chave] = nomes[v.chave] || nome;
   });
-  viagens.forEach(v => { if (v.data !== dia && rotas[v.chave]) rotas[v.chave].vizinhas.push(v); });
+  // dias sem nenhum registro (só até hoje)
+  const hoje = hojeISO();
+  dias.forEach(d => {
+    if (isoDeBr(d) > hoje) return;
+    Object.keys(nomes).forEach(c => { const k = d + "|" + c; if (!itens[k]) itens[k] = novo(nomes[c], d); });
+  });
 
-  hzRotas = Object.keys(rotas).map(k => rotas[k]);
-  hzRotas.forEach(r => {
-    r.viagens.sort((a, b) => (a.chegada[0] || a.fim[0]).ts - (b.chegada[0] || b.fim[0]).ts);
+  hzItens = Object.keys(itens).map(k => itens[k]);
+  hzItens.forEach(it => {
+    it.viagens.sort((a, b) => a.ts - b.ts);
     // viagem principal do dia: a completa, senão a que tem chegada, senão a primeira
-    r.principal = r.viagens.find(v => v.chegada.length && v.fim.length) || r.viagens.find(v => v.chegada.length) || r.viagens[0] || null;
-    r.estado = r.principal ? estadoViagem(r.principal) : "semRegistro";
-    const regs = r.viagens.reduce((a, v) => a.concat(v.chegada, v.fim), []);
-    r.texto = chaveRota([r.nome].concat(regs.map(x => x.motorista + " " + x.veiculo)).join(" "));
+    it.principal = it.viagens.find(v => v.chegada.length && v.fim.length) || it.viagens.find(v => v.chegada.length) || it.viagens[0] || null;
+    it.estado = it.principal ? estadoViagem(it.principal) : "semRegistro";
+    const regs = it.viagens.reduce((a, v) => a.concat(v.chegada, v.fim), []);
+    it.texto = chaveRota([it.nome].concat(regs.map(x => x.motorista + " " + x.veiculo)).join(" "));
   });
-  hzRotas.sort(ordemRota);
+  hzItens.sort((a, b) => isoDeBr(a.data).localeCompare(isoDeBr(b.data)) || ordemRota(a, b));
 
-  document.getElementById("hzRoteiros").innerHTML = hzRotas.map(r => `<option value="${esc(r.nome)}">`).join("");
+  const unicos = {};
+  hzItens.forEach(it => { unicos[it.chave] = it; });
+  document.getElementById("hzRoteiros").innerHTML = Object.keys(unicos).map(k => unicos[k]).sort(ordemRota)
+    .map(it => `<option value="${esc(it.nome)}">`).join("");
 }
 
 function filtrarHzTurno(t) {
@@ -2431,20 +2702,27 @@ function filtrarHzEstado(e) {
   desenharHorarios(true);
 }
 
+function alternarSemRegistro() {
+  hzSemRegistro = !hzSemRegistro;
+  desenharHorarios(true);
+}
+
 function desenharHorarios(semAnim) {
   if (!hz) return;
+  const unico = hz.de === hz.ate;
   const termo = chaveRota(document.getElementById("hzBusca").value);
-  const exato = hzRotas.find(r => r.chave === termo);
-  const porTurno = r => !hzTurno || r.turno === hzTurno;
+  const exato = termo && hzItens.some(it => it.chave === termo);
+  const porTurno = it => !hzTurno || it.turno === hzTurno;
   const grupos = { chegaram: ["concluido", "rota", "semFim"], concluido: ["concluido"], rota: ["rota"], faltando: ["semFim", "semChegada", "semRegistro"] };
-  const porEstado = r => !hzEstado || grupos[hzEstado].indexOf(r.estado) > -1;
-  const porBusca = r => !termo || (exato ? r === exato : r.texto.indexOf(termo) > -1);
+  const porEstado = it => !hzEstado || grupos[hzEstado].indexOf(it.estado) > -1;
+  const porBusca = it => !termo || (exato ? it.chave === termo : it.texto.indexOf(termo) > -1);
+  const visivel = it => unico || hzSemRegistro || it.estado !== "semRegistro";
 
-  // resumo (respeita o filtro de turno)
-  const base = hzRotas.filter(porTurno);
-  const conta = g => base.filter(r => grupos[g].indexOf(r.estado) > -1).length;
+  // resumo (respeita turno e busca)
+  const base = hzItens.filter(it => visivel(it) && porTurno(it) && porBusca(it));
+  const conta = g => base.filter(it => grupos[g].indexOf(it.estado) > -1).length;
   const kpis = [
-    { g: "chegaram", n: conta("chegaram"), de: base.length, rotulo: "Chegaram à fábrica", icone: "factory", cor: "#0d2f52", fundo: "#eff6ff" },
+    { g: "chegaram", n: conta("chegaram"), de: base.length, rotulo: unico ? "Chegaram à fábrica" : "Viagens com chegada", icone: "factory", cor: "#0d2f52", fundo: "#eff6ff" },
     { g: "concluido", n: conta("concluido"), rotulo: "Concluídos", icone: "checkCirc", cor: "#15803d", fundo: "#f0fdf4" },
     { g: "rota", n: conta("rota"), rotulo: "Em rota", icone: "bus", cor: "#1d4ed8", fundo: "#dbeafe" },
     { g: "faltando", n: conta("faltando"), rotulo: "Faltando registro", icone: "alert", cor: "#b45309", fundo: "#fffbeb" }
@@ -2452,49 +2730,68 @@ function desenharHorarios(semAnim) {
   document.getElementById("hzKpis").innerHTML = kpis.map(k => `
     <div class="kpi clicavel ${hzEstado === k.g ? "ativo" : ""}" style="--cor:${k.cor};--fundo-kpi:${k.fundo}" onclick="filtrarHzEstado('${k.g}')">
       <div class="kpi-ic">${ic(k.icone)}</div>
-      <div><strong>${k.n}${k.de !== undefined ? `<small style="font-size:14px;color:var(--suave)"> / ${k.de}</small>` : ""}</strong><span>${k.rotulo}</span></div>
+      <div><strong>${k.n}${k.de !== undefined ? `<small class="kpi-de"> / ${k.de}</small>` : ""}</strong><span>${k.rotulo}</span></div>
     </div>`).join("");
 
   const cont = {};
-  hzRotas.forEach(r => { cont[r.turno] = (cont[r.turno] || 0) + 1; });
+  hzItens.filter(it => visivel(it) && porBusca(it)).forEach(it => { cont[it.turno] = (cont[it.turno] || 0) + 1; });
+  const total = Object.keys(cont).reduce((a, k) => a + cont[k], 0);
   document.getElementById("hzTurnos").innerHTML =
-    `<button class="chip ${!hzTurno ? "ativo" : ""}" onclick="filtrarHzTurno('')">Todos <b>${hzRotas.length}</b></button>` +
+    `<button class="chip ${!hzTurno ? "ativo" : ""}" onclick="filtrarHzTurno('')">Todos <b>${total}</b></button>` +
     HZ_TURNOS.filter(t => cont[t]).map(t =>
-      `<button class="chip ${hzTurno === t ? "ativo" : ""}" onclick="filtrarHzTurno('${t}')">${t} <b>${cont[t]}</b></button>`).join("");
+      `<button class="chip ${hzTurno === t ? "ativo" : ""}" onclick="filtrarHzTurno('${t}')">${t} <b>${cont[t]}</b></button>`).join("") +
+    (unico ? "" : `<button class="chip chip-opcao ${hzSemRegistro ? "ativo" : ""}" onclick="alternarSemRegistro()">${ic(hzSemRegistro ? "checkCirc" : "alert")}Mostrar dias sem registro</button>`);
 
-  const lista = hzRotas.filter(r => porTurno(r) && porEstado(r) && porBusca(r));
+  hzFiltrados = hzItens.filter(it => visivel(it) && porTurno(it) && porEstado(it) && porBusca(it));
   const grade = document.getElementById("hzGrade");
   grade.classList.toggle("parada", !!semAnim);
-  grade.innerHTML = lista.length
-    ? lista.map((r, i) => cartaoRota(r, i, semAnim)).join("")
-    : `<div class="vazio" style="grid-column:1/-1">${ic("search")}${hzRotas.length ? "Nenhum roteiro com esse filtro." : "Nenhum registro de chegada ou finalização neste dia."}</div>`;
+  grade.classList.toggle("hz-modo-tabela", !unico);
+  if (!hzFiltrados.length) {
+    grade.innerHTML = `<div class="vazio" style="grid-column:1/-1">${ic("search")}${hzItens.length ? "Nenhum roteiro com esse filtro." : "Nenhum registro de chegada ou finalização no período."}</div>`;
+  } else if (unico) {
+    grade.innerHTML = hzFiltrados.map((it, i) => cartaoRota(it, i, semAnim)).join("");
+  } else {
+    const mostrar = hzFiltrados.slice(0, HZ_MAX_LINHAS);
+    grade.innerHTML = `
+      <div class="hz-tabela">
+        <div class="hz-tl cab"><span>Data</span><span>Roteiro</span><span>Chegada</span><span>Finalização</span><span>Veículo · motorista</span><span>Situação</span></div>
+        ${mostrar.map(linhaRota).join("")}
+        ${hzFiltrados.length > mostrar.length ? `<div class="hz-mais">Mostrando ${mostrar.length} de ${hzFiltrados.length}. Use a busca ou o filtro de turno, ou baixe o CSV com tudo.</div>` : ""}
+      </div>`;
+  }
+  document.getElementById("hzCsv").disabled = !hzFiltrados.length;
+}
+
+function sufixoDia(reg, diaBase) {
+  if (reg.data === diaBase) return "";
+  return `<em>${instante(reg.data, "00:00") > instante(diaBase, "00:00") ? "+1 dia" : "-1 dia"}</em>`;
 }
 
 function horaCaixa(rotulo, icone, regs, diaBase) {
   if (!regs.length) return `<div class="rh falta"><small>${ic(icone)}${rotulo}</small><b>--:--</b></div>`;
   const p = principal(regs);
-  return `<div class="rh"><small>${ic(icone)}${rotulo}</small><b>${esc(p.horario)}${p.data !== diaBase ? `<em>${instante(p.data, "00:00") > instante(diaBase, "00:00") ? "+1 dia" : "-1 dia"}</em>` : ""}</b></div>`;
+  return `<div class="rh"><small>${ic(icone)}${rotulo}</small><b>${esc(p.horario)}${sufixoDia(p, diaBase)}</b></div>`;
 }
 
-function cartaoRota(r, i, semAnim) {
-  const e = HZ_ESTADOS[r.estado];
-  const v = r.principal;
-  const outras = r.viagens.filter(x => x !== v);
+function cartaoRota(it, i, semAnim) {
+  const e = HZ_ESTADOS[it.estado];
+  const v = it.principal;
+  const outras = it.viagens.filter(x => x !== v);
   const outrasViagens = outras.filter(x => x.chegada.length).length;
   const avulsos = outras.length - outrasViagens;
   const regs = v ? v.chegada.concat(v.fim) : [];
   const ultimoReg = regs.length ? principal(regs) : null;
   const repetidos = v ? (v.chegada.length > 1 ? 1 : 0) + (v.fim.length > 1 ? 1 : 0) : 0;
   return `
-    <button class="rot" style="--cor-st:${e.cor};--fundo-st:${e.fundo};${semAnim ? "" : `animation-delay:${Math.min(i, 12) * 25}ms`}" onclick="abrirRota('${esc(r.chave)}')">
+    <button class="rot" style="--cor-st:${e.cor};--fundo-st:${e.fundo};${semAnim ? "" : `animation-delay:${Math.min(i, 12) * 25}ms`}" onclick="abrirRota('${esc(it.chave)}', '${esc(it.data)}')">
       <div class="rot-topo">
-        <span class="rot-turno">${HZ_SIGLA[r.turno]}</span>
-        <span class="rot-nome" title="${esc(r.nome)}">${esc(r.nome)}</span>
+        <span class="rot-turno">${HZ_SIGLA[it.turno]}</span>
+        <span class="rot-nome" title="${esc(it.nome)}">${esc(it.nome)}</span>
         <span class="rot-st">${e.rotulo}</span>
       </div>
       <div class="rot-horas">
-        ${horaCaixa("Chegada à fábrica", "factory", v ? v.chegada : [], hz.data)}
-        ${horaCaixa("Finalização", "flag", v ? v.fim : [], hz.data)}
+        ${horaCaixa("Chegada à fábrica", "factory", v ? v.chegada : [], it.data)}
+        ${horaCaixa("Finalização", "flag", v ? v.fim : [], it.data)}
       </div>
       ${ultimoReg ? `<div class="rot-rodape">
         ${ultimoReg.veiculo ? `<span>${ic("bus")}${esc(ultimoReg.veiculo)}</span>` : ""}
@@ -2504,6 +2801,37 @@ function cartaoRota(r, i, semAnim) {
         ${repetidos ? `<span class="dup">registro repetido</span>` : ""}
       </div>` : ""}
     </button>`;
+}
+
+function linhaRota(it) {
+  const e = HZ_ESTADOS[it.estado];
+  const v = it.principal;
+  const c = v && v.chegada.length ? principal(v.chegada) : null;
+  const f = v && v.fim.length ? principal(v.fim) : null;
+  const u = f || c;
+  return `
+    <button class="hz-tl" style="--cor-st:${e.cor};--fundo-st:${e.fundo}" onclick="abrirRota('${esc(it.chave)}', '${esc(it.data)}')">
+      <span class="c-data">${esc(it.data.slice(0, 5))}<small>${diaSemana(it.data)}</small></span>
+      <span class="c-rot"><span class="rot-turno">${HZ_SIGLA[it.turno]}</span><span class="n" title="${esc(it.nome)}">${esc(it.nome)}</span></span>
+      <span class="c-h c-che ${c ? "" : "falta"}" data-r="Chegada">${c ? esc(c.horario) + sufixoDia(c, it.data) : "--:--"}</span>
+      <span class="c-h c-fim ${f ? "" : "falta"}" data-r="Finalização">${f ? esc(f.horario) + sufixoDia(f, it.data) : "--:--"}</span>
+      <span class="c-vm">${u ? esc([u.veiculo, u.motorista].filter(Boolean).join(" · ")) : ""}</span>
+      <span class="rot-st">${e.rotulo}</span>
+    </button>`;
+}
+
+function baixarHorarios() {
+  if (!hzFiltrados.length) return;
+  const linhas = hzFiltrados.map(it => {
+    const v = it.principal;
+    const c = v && v.chegada.length ? principal(v.chegada) : null;
+    const f = v && v.fim.length ? principal(v.fim) : null;
+    const u = f || c;
+    return [it.data, it.turno, it.nome, c ? c.horario : "", c ? c.data : "", f ? f.horario : "", f ? f.data : "",
+      u ? u.veiculo : "", u ? u.motorista : "", HZ_ESTADOS[it.estado].rotulo];
+  });
+  baixarCsv("horarios-roteiros_" + nomePeriodo(hz.de, hz.ate) + ".csv",
+    ["Data", "Turno", "Roteiro", "Chegada", "Data da chegada", "Finalização", "Data da finalização", "Veículo", "Motorista", "Situação"], linhas);
 }
 
 function regHtml(r, antigo) {
@@ -2519,28 +2847,32 @@ function regHtml(r, antigo) {
     </div>`;
 }
 
-function abrirRota(chave) {
-  const r = hzRotas.find(x => x.chave === chave);
-  if (!r) return;
+function abrirRota(chave, data) {
+  const it = hzItens.find(x => x.chave === chave && x.data === data);
+  if (!it) return;
   abertoNaGaveta = null;
-  const e = HZ_ESTADOS[r.estado];
+  const e = HZ_ESTADOS[it.estado];
   const blocos = regs => {
-    if (!regs.length) return "";
     const p = principal(regs);
     return regs.map(x => regHtml(x, x !== p)).join("");
   };
-  const viagens = r.viagens.map((v, i) => `
+  const vazio = (rotulo, txt) => `<div class="reg"><div class="reg-hora" style="color:#cbd5e1">--:--</div><div class="reg-info"><b>${rotulo}</b><span>${txt}</span></div></div>`;
+  const viagens = it.viagens.map((v, i) => `
     <div class="viagem">
-      ${r.viagens.length > 1 ? `<h5>${v.chegada.length ? "Viagem " + (i + 1) : "Registro avulso (sem chegada antes)"}</h5>` : ""}
-      ${v.chegada.length ? blocos(v.chegada) : `<div class="reg"><div class="reg-hora" style="color:#cbd5e1">--:--</div><div class="reg-info"><b>Chegada a Fábrica</b><span>Sem registro</span></div></div>`}
-      ${v.fim.length ? blocos(v.fim) : `<div class="reg"><div class="reg-hora" style="color:#cbd5e1">--:--</div><div class="reg-info"><b>Finalização do roteiro</b><span>${estadoViagem(v) === "rota" ? "Ainda em rota" : "Sem registro"}</span></div></div>`}
+      ${it.viagens.length > 1 ? `<h5>${v.chegada.length ? "Viagem " + (i + 1) : "Registro avulso (sem chegada antes)"}</h5>` : ""}
+      ${v.chegada.length ? blocos(v.chegada) : vazio("Chegada a Fábrica", "Sem registro")}
+      ${v.fim.length ? blocos(v.fim) : vazio("Finalização do roteiro", estadoViagem(v) === "rota" ? "Ainda em rota" : "Sem registro")}
     </div>`).join("");
-  // nos dias vizinhos só entram viagens com chegada (finalização solta na borda é resto de outro dia)
-  const vizinhas = r.vizinhas.filter(v => v.chegada.length).sort((a, b) => (a.chegada[0] || a.fim[0]).ts - (b.chegada[0] || b.fim[0]).ts).map(v => {
-    const c = v.chegada.length ? principal(v.chegada).horario : "--:--";
-    const f = v.fim.length ? principal(v.fim) : null;
-    return `<div><b>${esc(v.data)}</b><span>Chegada ${esc(c)} · Finalização ${f ? esc(f.horario) + (f.data !== v.data ? " (+1 dia)" : "") : "--:--"}</span></div>`;
-  }).join("");
+
+  // outros dias do mesmo roteiro (até 3 dias antes e depois), só viagens com chegada
+  const ref = instante(it.data, "12:00");
+  const vizinhas = hzViagens
+    .filter(v => v.chave === chave && v.data !== it.data && v.chegada.length && Math.abs(instante(v.data, "12:00") - ref) <= 3 * 864e5)
+    .sort((a, b) => a.ts - b.ts)
+    .map(v => {
+      const f = v.fim.length ? principal(v.fim) : null;
+      return `<div><b>${esc(v.data)}</b><span>Chegada ${esc(principal(v.chegada).horario)} · Finalização ${f ? esc(f.horario) + (f.data !== v.data ? " (+1 dia)" : "") : "--:--"}</span></div>`;
+    }).join("");
 
   document.getElementById("gaveta").innerHTML = `
     <div class="fundo-gaveta" onclick="fecharGaveta()"></div>
@@ -2548,8 +2880,8 @@ function abrirRota(chave) {
       <div class="gaveta-topo">
         <span class="tipo-ic">${ic("bus")}</span>
         <div>
-          <h3>${esc(r.nome)}</h3>
-          <small>${esc(r.turno)} · ${esc(hz.data)} · ${e.rotulo}</small>
+          <h3>${esc(it.nome)}</h3>
+          <small>${esc(it.turno)} · ${esc(it.data)} · ${e.rotulo}</small>
         </div>
         <button class="fechar" onclick="fecharGaveta()" aria-label="Fechar">${ic("close")}</button>
       </div>
@@ -2561,6 +2893,208 @@ function abrirRota(chave) {
         ${vizinhas ? `<div class="secao"><h4>Dias vizinhos</h4><div class="descricao vizinhos">${vizinhas}</div></div>` : ""}
       </div>
     </aside>`;
+}
+
+/* ================= PENDÊNCIAS (aba "relátorio" da planilha de chegada e saída) ================= */
+const PD_FALTA = {
+  chegada: { rotulo: "Chegada",                cor: "#c2410c", fundo: "#fff7ed" },
+  fim:     { rotulo: "Encerramento",           cor: "#7c3aed", fundo: "#f5f3ff" },
+  ambos:   { rotulo: "Chegada e encerramento", cor: "#b91c1c", fundo: "#fef2f2" }
+};
+
+let pd = null;
+let pdFiltro = "abertas";   // "abertas", "tratadas" ou "todas"
+let pdTurno = "";
+let pdTipo = "";            // filtro pelos cartões: "chegada" ou "fim"
+let pdFiltradas = [];
+const pdRascunho = {};      // instrutor digitado e ainda não enviado
+
+function faltaDe(p) {
+  return p.chegada !== "OK" && p.fim !== "OK" ? "ambos" : p.chegada !== "OK" ? "chegada" : "fim";
+}
+
+function carregarPendencias(manual, silencioso) {
+  const deCampo = document.getElementById("pdDe"), ateCampo = document.getElementById("pdAte");
+  if (!deCampo.value) deCampo.value = somaDias(hojeISO(), -1);
+  if (!ateCampo.value) ateCampo.value = deCampo.value;
+  const pedido = deCampo.value + "|" + ateCampo.value;
+  const btn = document.getElementById("btnAtualizar");
+  btn.classList.add("girando");
+  if (!silencioso) {
+    document.getElementById("pdLista").innerHTML = '<div class="esqueleto"></div>'.repeat(5);
+    document.getElementById("pdKpis").innerHTML = "";
+  }
+  return chamarApi({ acao: "pendencias", de: deCampo.value, ate: ateCampo.value })
+    .then(r => {
+      if (r.senha === false) { sair(); document.getElementById("erroLogin").textContent = r.erro; return; }
+      if (!r.ok) throw new Error(r.erro === "Ação desconhecida."
+        ? "O Apps Script publicado ainda não tem as pendências. Faça Implantar > Gerenciar implantações > Editar > Versão: Nova versão."
+        : r.erro || "Erro ao carregar as pendências.");
+      if (deCampo.value + "|" + ateCampo.value !== pedido) return;
+      pd = r;
+      document.getElementById("pdInstrutores").innerHTML = (r.instrutores || []).map(n => `<option value="${esc(n)}">`).join("");
+      desenharPendencias(silencioso);
+      if (manual) toast("Pendências atualizadas", "check");
+    })
+    .catch(err => {
+      if (silencioso) return;
+      document.getElementById("pdLista").innerHTML = `<div class="vazio">${ic("alert")}${esc(err.message)}</div>`;
+      toast(err.message, "alert", true);
+    })
+    .finally(() => btn.classList.remove("girando"));
+}
+
+function filtrarPd(campo, valor) {
+  if (campo === "filtro") pdFiltro = valor;
+  if (campo === "turno") pdTurno = pdTurno === valor ? "" : valor;
+  if (campo === "tipo") { pdTipo = pdTipo === valor ? "" : valor; if (pdTipo) pdFiltro = "abertas"; }
+  desenharPendencias(true);
+}
+
+function desenharPendencias(semAnim) {
+  if (!pd) return;
+  const termo = chaveRota(document.getElementById("pdBusca").value);
+  const turnoDaPd = p => turnoDe(p.roteiro) !== "Outros" ? turnoDe(p.roteiro) : (p.turno || "Outros");
+  const porBusca = p => !termo || chaveRota(p.roteiro + " " + p.instrutor + " " + p.tratadoPor).indexOf(termo) > -1;
+  const porTurno = p => !pdTurno || turnoDaPd(p) === pdTurno;
+  const porTipo = p => !pdTipo || faltaDe(p) === pdTipo || faltaDe(p) === "ambos";
+  const porFiltro = p => pdFiltro === "todas" || (pdFiltro === "tratadas" ? p.tratado : !p.tratado);
+
+  const base = pd.itens.filter(p => porBusca(p) && porTurno(p));
+  const abertas = base.filter(p => !p.tratado);
+  const kpis = [
+    { n: abertas.length, rotulo: "Em aberto", icone: "inbox", cor: "#d97706", fundo: "#fffbeb", acao: "filtrarPd('filtro','abertas')", ativo: pdFiltro === "abertas" && !pdTipo },
+    { n: base.length - abertas.length, rotulo: "Tratadas", icone: "checkCirc", cor: "#15803d", fundo: "#f0fdf4", acao: "filtrarPd('filtro','tratadas')", ativo: pdFiltro === "tratadas" },
+    { n: abertas.filter(p => p.chegada !== "OK").length, rotulo: "Sem chegada (em aberto)", icone: "factory", cor: "#c2410c", fundo: "#fff7ed", acao: "filtrarPd('tipo','chegada')", ativo: pdTipo === "chegada" },
+    { n: abertas.filter(p => p.fim !== "OK").length, rotulo: "Sem encerramento (em aberto)", icone: "flag", cor: "#7c3aed", fundo: "#f5f3ff", acao: "filtrarPd('tipo','fim')", ativo: pdTipo === "fim" }
+  ];
+  document.getElementById("pdKpis").innerHTML = kpis.map(k => `
+    <div class="kpi clicavel ${k.ativo ? "ativo" : ""}" style="--cor:${k.cor};--fundo-kpi:${k.fundo}" onclick="${k.acao}">
+      <div class="kpi-ic">${ic(k.icone)}</div>
+      <div><strong>${k.n}</strong><span>${k.rotulo}</span></div>
+    </div>`).join("");
+
+  const nAb = pd.itens.filter(p => !p.tratado).length;
+  document.getElementById("badgePendencias").textContent = nAb || "";
+  document.getElementById("pdSeg").innerHTML = [["abertas", "Em aberto", abertas.length], ["tratadas", "Tratadas", base.length - abertas.length], ["todas", "Todas", base.length]]
+    .map(([k, r, n]) => `<button class="${pdFiltro === k ? "ativo" : ""}" onclick="filtrarPd('filtro','${k}')">${r} <b>${n}</b></button>`).join("");
+
+  const cont = {};
+  pd.itens.filter(porBusca).forEach(p => { const t = turnoDaPd(p); cont[t] = (cont[t] || 0) + 1; });
+  document.getElementById("pdTurnos").innerHTML =
+    `<button class="chip ${!pdTurno ? "ativo" : ""}" onclick="filtrarPd('turno','')">Todos os turnos</button>` +
+    HZ_TURNOS.filter(t => cont[t]).map(t =>
+      `<button class="chip ${pdTurno === t ? "ativo" : ""}" onclick="filtrarPd('turno','${t}')">${t} <b>${cont[t]}</b></button>`).join("");
+
+  const aviso = document.getElementById("pdAntes");
+  aviso.innerHTML = pd.abertasAntes
+    ? `${ic("alert")}<span>Há <b>${pd.abertasAntes}</b> ${pd.abertasAntes === 1 ? "pendência em aberto" : "pendências em aberto"} antes de ${esc(pd.de)}.</span>
+       <button onclick="verAnteriores()">Ver os ${MAX_DIAS} dias anteriores</button>`
+    : "";
+  aviso.classList.toggle("hidden", !pd.abertasAntes);
+
+  pdFiltradas = pd.itens.filter(p => porBusca(p) && porTurno(p) && porTipo(p) && porFiltro(p))
+    .sort((a, b) => isoDeBr(b.data).localeCompare(isoDeBr(a.data)) ||
+      ordemRota({ turno: turnoDaPd(a), nome: a.roteiro }, { turno: turnoDaPd(b), nome: b.roteiro }));
+  const lista = document.getElementById("pdLista");
+  lista.classList.toggle("parada", !!semAnim);
+  if (!pdFiltradas.length) {
+    lista.innerHTML = `<div class="vazio">${ic("checkCirc")}${pd.itens.length
+      ? (pdFiltro === "abertas" ? "Nenhuma pendência em aberto com esse filtro." : "Nada com esse filtro.")
+      : "Nenhuma pendência no relatório deste período."}</div>`;
+  } else {
+    const porDia = {};
+    pdFiltradas.forEach(p => { (porDia[p.data] = porDia[p.data] || []).push(p); });
+    let i = 0;
+    lista.innerHTML = Object.keys(porDia).map(d => {
+      const doDia = pd.itens.filter(p => p.data === d);
+      const tratadas = doDia.filter(p => p.tratado).length;
+      return `
+        <div class="pd-grupo">
+          <h4>${esc(d)} <small>${diaSemana(d)} · ${doDia.length} ${doDia.length === 1 ? "pendência" : "pendências"} no relatório · ${tratadas} ${tratadas === 1 ? "tratada" : "tratadas"}</small></h4>
+          ${porDia[d].map(p => pendenciaHtml(p, i++, semAnim)).join("")}
+        </div>`;
+    }).join("");
+  }
+  document.getElementById("pdCsv").disabled = !pdFiltradas.length;
+}
+
+function verAnteriores() {
+  const ate = document.getElementById("pdAte").value;
+  document.getElementById("pdDe").value = somaDias(ate, -(MAX_DIAS - 1));
+  pdFiltro = "abertas";
+  recarregarPeriodo("pd");
+}
+
+function pendenciaHtml(p, i, semAnim) {
+  const f = PD_FALTA[faltaDe(p)];
+  const sigla = HZ_SIGLA[turnoDe(p.roteiro)];
+  return `
+    <div class="pd-item ${p.tratado ? "tratado" : ""}" style="--cor-f:${f.cor};--fundo-f:${f.fundo};${semAnim ? "" : `animation-delay:${Math.min(i, 12) * 25}ms`}">
+      <div class="pd-info">
+        <span class="rot-turno">${sigla && sigla !== "—" ? sigla : esc(p.turno || "—")}</span>
+        <div class="pd-txt">
+          <strong title="${esc(p.roteiro)}">${esc(p.roteiro)}</strong>
+          <small>${esc(p.data)} · ${esc(p.turno)}</small>
+        </div>
+        <span class="pd-falta">Falta: ${f.rotulo}</span>
+      </div>
+      <div class="pd-acao">
+        ${p.tratado ? `
+          <div class="pd-feito">${ic("checkCirc")}<div><b>TRATADO · ${esc(p.instrutor)}</b><small>por ${esc(p.tratadoPor) || "-"} em ${esc(p.tratadoEm) || "-"}</small></div></div>
+          <button class="pd-desfazer" onclick="tratarPendencia('${p.id}', true)">Desfazer</button>` : `
+          <input class="pd-instrutor" id="pdi-${p.id}" list="pdInstrutores" maxlength="80" placeholder="Instrutor"
+                 aria-label="Instrutor que recebeu a pendência de ${esc(p.roteiro)}" value="${esc(pdRascunho[p.id] || "")}"
+                 oninput="pdRascunho['${p.id}'] = this.value; this.classList.remove('campo-erro')"
+                 onkeydown="if (event.key === 'Enter') tratarPendencia('${p.id}')">
+          <button class="pd-btn" id="pdb-${p.id}" onclick="tratarPendencia('${p.id}')">${ic("check")}TRATADO</button>`}
+      </div>
+    </div>`;
+}
+
+function tratarPendencia(id, desfazer) {
+  const p = pd && pd.itens.find(x => x.id === id);
+  if (!p) return;
+  const campo = document.getElementById("pdi-" + id);
+  const instrutor = desfazer ? "" : campo.value.trim();
+  if (!desfazer && instrutor.length < 2) {
+    campo.classList.add("campo-erro");
+    campo.focus();
+    toast("Digite o nome do instrutor antes de marcar como TRATADO.", "alert", true);
+    return;
+  }
+  if (desfazer && !confirm("Desfazer o TRATADO de " + p.roteiro + " (" + p.data + ")?")) return;
+  const btn = document.getElementById("pdb-" + id);
+  if (btn) { btn.disabled = true; btn.lastChild.textContent = "Gravando..."; }
+
+  chamarApi({ acao: "tratarPendencia", id: p.id, data: p.data, roteiro: p.roteiro, instrutor, operador, desfazer: !!desfazer })
+    .then(r => {
+      if (r.senha === false) { sair(); return; }
+      if (!r.ok) {
+        if (r.jaTratado) carregarPendencias(false, true);
+        throw new Error(r.erro || "Não foi possível gravar.");
+      }
+      Object.assign(p, { id: r.id, instrutor: r.instrutor, tratado: r.tratado, tratadoPor: r.tratadoPor, tratadoEm: r.tratadoEm });
+      if (r.instrutor && pd.instrutores.indexOf(r.instrutor) === -1) {
+        pd.instrutores.push(r.instrutor);
+        pd.instrutores.sort();
+        document.getElementById("pdInstrutores").innerHTML = pd.instrutores.map(n => `<option value="${esc(n)}">`).join("");
+      }
+      delete pdRascunho[id];
+      desenharPendencias(true);
+      toast(r.tratado ? p.roteiro + " tratado (" + r.instrutor + ")" : "TRATADO desfeito", r.tratado ? "check" : "refresh");
+    })
+    .catch(err => {
+      toast(err.message, "alert", true);
+      if (btn) { btn.disabled = false; btn.lastChild.textContent = "TRATADO"; }
+    });
+}
+
+function baixarPendencias() {
+  if (!pdFiltradas.length) return;
+  baixarCsv("pendencias-roteiros_" + nomePeriodo(pd.de, pd.ate) + ".csv",
+    ["Data", "Turno", "Roteiro", "Falta", "Instrutor", "Status", "Tratado por", "Tratado em"],
+    pdFiltradas.map(p => [p.data, p.turno, p.roteiro, PD_FALTA[faltaDe(p)].rotulo, p.instrutor, p.tratado ? "TRATADO" : "", p.tratadoPor, p.tratadoEm]));
 }
 
 /* AVISOS */
