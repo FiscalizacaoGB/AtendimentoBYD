@@ -1266,19 +1266,77 @@ body.lote .toasts { bottom: 90px; }
 .pd-item.tratado .pd-falta { opacity: .55; }
 
 .pd-acao { flex: 1 1 320px; display: flex; align-items: center; justify-content: flex-end; gap: 8px; }
-.pd-instrutor { flex: 1; max-width: 260px; padding: 9px 11px; font-size: 14px; }
-.pd-btn { background: var(--verde); font-weight: bold; font-size: 13px; padding: 10px 14px; letter-spacing: .4px; }
 
 .pd-feito { display: flex; align-items: center; gap: 8px; color: var(--verde); font-size: 13px; text-align: right; }
 .pd-feito small { display: block; color: var(--suave); font-size: 11px; font-weight: normal; }
 .pd-desfazer { background: transparent; color: var(--suave); text-decoration: underline; font-size: 12px; padding: 4px 6px; }
 
+.pd-aviso.pd-info { background: #f0fdf4; border-color: #bbf7d0; color: #14532d; }
+
+.pd-item.marcavel { cursor: pointer; user-select: none; }
+.pd-item.marcavel:hover { border-color: #7dd3fc; }
+.pd-item.marcavel:focus-visible { outline: 2px solid var(--azul); outline-offset: 2px; }
+.pd-item .caixa { margin-top: 0; }
+.pd-item.sel { background: #f0f9ff; border-color: #7dd3fc; border-left-color: var(--cor-f); }
+.pd-item.sel .caixa { background: var(--azul); border-color: var(--azul); color: #fff; }
+.pd-item .caixa.feita { background: #86efac; border-color: #86efac; color: #fff; }
+.pd-lista.cheia .pd-item.marcavel:not(.sel) { opacity: .55; }
+
+.pd-grupo h4 { display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap; }
+
+.pd-dia-sel {
+  background: transparent;
+  color: var(--azul);
+  border: 1px solid #bfdbfe;
+  font-size: 12px;
+  padding: 5px 10px;
+  border-radius: 999px;
+}
+
+.pd-dia-sel:hover { background: #eff6ff; }
+
+.pd-dica {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 10px;
+  font-size: 13px;
+  color: var(--suave);
+}
+
+.pd-dica .ic { width: 17px; height: 17px; flex: 0 0 auto; color: #1faa59; }
+
+.pd-barra .pd-lim { font-size: 12px; color: #cbd5e1; }
+.pd-barra .pd-lim.cheio { color: #fbbf24; font-weight: bold; }
+.pd-para { flex: 1 1 220px; max-width: 320px; }
+
+.pd-para select, .pd-para input {
+  width: 100%;
+  padding: 8px 10px;
+  font-size: 14px;
+  border-radius: 10px;
+  border: none;
+  font-family: inherit;
+  background: #fff;
+  color: var(--texto);
+}
+
+.bl-acoes .pd-bl-whats { background: #25d366; color: #052e16; display: inline-flex; align-items: center; gap: 6px; }
+.bl-acoes .pd-bl-whats .ic { width: 17px; height: 17px; }
+body.pdsel .painel { padding-bottom: 130px; }
+body.pdsel .toasts { bottom: 90px; }
+
 @media (max-width: 640px) {
-  .pd-info { flex-wrap: wrap; }
-  .pd-acao { justify-content: stretch; }
-  .pd-instrutor { max-width: none; }
+  .pd-info { flex-wrap: wrap; row-gap: 6px; }
+  .pd-txt { flex-basis: calc(100% - 90px); }
+  .pd-item.marcavel .pd-falta { margin-left: 32px; }
+  .pd-acao { justify-content: stretch; flex-wrap: wrap; }
   .pd-feito { text-align: left; flex: 1; }
   .btn-csv { flex: 1; }
+  .pd-para { max-width: none; flex: 1 1 100%; }
+  .bl-acoes .pd-bl-whats { justify-content: center; }
+  body.pdsel .painel { padding-bottom: 240px; }
+  body.pdsel .toasts { bottom: 210px; }
 }
 
 .hz-busca { flex: 1; min-width: 240px; }
@@ -1605,9 +1663,15 @@ body.lote .toasts { bottom: 90px; }
       <button class="btn-csv" id="pdCsv" onclick="baixarPendencias()" disabled><i data-ic="download"></i><span class="so-largo">Baixar</span>CSV</button>
     </div>
     <div class="pd-aviso hidden" id="pdAntes"></div>
+    <div class="pd-aviso pd-info hidden" id="pdSemCadastro">
+      <i data-ic="whats"></i><span>Para escolher o instrutor e enviar pelo WhatsApp, cadastre os instrutores e orientadores (nome e telefone)
+      em <b>INSTRUTORES</b> no Atendimento.gs ou numa aba <b>Instrutores</b> da planilha de atendimento. Até lá, marque as pendências e digite o nome do instrutor.</span>
+    </div>
     <div class="kpis" id="pdKpis"></div>
     <div class="seg pd-seg" id="pdSeg"></div>
     <div class="filtros" id="pdTurnos"></div>
+    <p class="pd-dica hidden" id="pdDica"><i data-ic="whats"></i><span>Marque até 10 pendências (ou use <b>Marcar do dia</b>), escolha quem recebe e clique em
+      <b>Enviar WhatsApp</b>: vai tudo numa mensagem só, e elas ficam como TRATADO.</span></p>
     <div class="pd-lista" id="pdLista"></div>
     <datalist id="pdInstrutores"></datalist>
     <p class="hz-nota"><i data-ic="alert"></i><span>As pendências vêm do relatório que o Apps Script dos motoristas gera todo dia à meia-noite
@@ -1625,6 +1689,19 @@ body.lote .toasts { bottom: 90px; }
     <button class="bl-sec" id="blProv" onclick="selecionarComProvidencia()">Já têm providência</button>
     <button class="bl-sec" onclick="alternarLote()">Cancelar</button>
     <button class="bl-ok" id="blOk" onclick="abrirModalLote()" disabled>Encerrar</button>
+  </div>
+</div>
+
+<div class="barra-lote pd-barra hidden" id="pdBarra">
+  <div class="bl-info">
+    <strong id="pdQtd">0 pendências marcadas</strong>
+    <span class="pd-lim" id="pdLim">até 10 por mensagem</span>
+  </div>
+  <div class="pd-para" id="pdPara"></div>
+  <div class="bl-acoes">
+    <button class="bl-sec" onclick="limparSelecaoPd()">Limpar</button>
+    <button class="bl-sec" id="pdSo" onclick="enviarSelecaoPd(false)" title="Grava TRATADO sem abrir o WhatsApp">Só marcar TRATADO</button>
+    <button class="bl-ok pd-bl-whats" id="pdEnviar" onclick="enviarSelecaoPd(true)" title="Abre o WhatsApp com a mensagem pronta e marca como TRATADO">Enviar WhatsApp</button>
   </div>
 </div>
 
@@ -2448,6 +2525,7 @@ function mostrarVista(v) {
   document.querySelectorAll(".vistas button").forEach(b => b.classList.toggle("ativo", b.dataset.vista === v));
   Object.keys(VISTAS).forEach(n => document.getElementById(VISTAS[n]).classList.toggle("hidden", v !== n));
   if (v !== "chamados" && modoLote) alternarLote();
+  if (pd) atualizarSelecaoPd();
   try { history.replaceState(null, "", v === "chamados" ? location.pathname + location.search : "#" + v); } catch (e) {}
   if (v === "horarios" && !hz) definirPeriodo("hz", 0, 0);
   if (v === "pendencias" && !pd) definirPeriodo("pd", -1, -1);
@@ -2907,7 +2985,13 @@ let pdFiltro = "abertas";   // "abertas", "tratadas" ou "todas"
 let pdTurno = "";
 let pdTipo = "";            // filtro pelos cartões: "chegada" ou "fim"
 let pdFiltradas = [];
-const pdRascunho = {};      // instrutor digitado e ainda não enviado
+const PD_MAX_ENVIO = 10;     // pendências por mensagem (igual ao MAX_PENDENCIAS_ENVIO do Atendimento.gs)
+const pdSel = new Set();    // pendências marcadas para enviar juntas
+let pdPessoa = "";          // quem recebe (posição no cadastro); fica escolhido para o próximo envio
+
+function pdTurnoDe(p) {
+  return turnoDe(p.roteiro) !== "Outros" ? turnoDe(p.roteiro) : (p.turno || "Outros");
+}
 
 function faltaDe(p) {
   return p.chegada !== "OK" && p.fim !== "OK" ? "ambos" : p.chegada !== "OK" ? "chegada" : "fim";
@@ -2931,8 +3015,12 @@ function carregarPendencias(manual, silencioso) {
         ? "O Apps Script publicado ainda não tem as pendências. Faça Implantar > Gerenciar implantações > Editar > Versão: Nova versão."
         : r.erro || "Erro ao carregar as pendências.");
       if (deCampo.value + "|" + ateCampo.value !== pedido) return;
+      const marcadas = pd && silencioso ? new Set(pdSel) : new Set();
       pd = r;
+      pdSel.clear();
+      r.itens.forEach(p => { if (marcadas.has(p.id) && !p.tratado) pdSel.add(p.id); });
       document.getElementById("pdInstrutores").innerHTML = (r.instrutores || []).map(n => `<option value="${esc(n)}">`).join("");
+      desenharDestinoPd();
       desenharPendencias(silencioso);
       if (manual) toast("Pendências atualizadas", "check");
     })
@@ -2954,7 +3042,7 @@ function filtrarPd(campo, valor) {
 function desenharPendencias(semAnim) {
   if (!pd) return;
   const termo = chaveRota(document.getElementById("pdBusca").value);
-  const turnoDaPd = p => turnoDe(p.roteiro) !== "Outros" ? turnoDe(p.roteiro) : (p.turno || "Outros");
+  const turnoDaPd = pdTurnoDe;
   const porBusca = p => !termo || chaveRota(p.roteiro + " " + p.instrutor + " " + p.tratadoPor).indexOf(termo) > -1;
   const porTurno = p => !pdTurno || turnoDaPd(p) === pdTurno;
   const porTipo = p => !pdTipo || faltaDe(p) === pdTipo || faltaDe(p) === "ambos";
@@ -2992,6 +3080,7 @@ function desenharPendencias(semAnim) {
        <button onclick="verAnteriores()">Ver os ${MAX_DIAS} dias anteriores</button>`
     : "";
   aviso.classList.toggle("hidden", !pd.abertasAntes);
+  document.getElementById("pdSemCadastro").classList.toggle("hidden", !!(pd.cadastro || []).length);
 
   pdFiltradas = pd.itens.filter(p => porBusca(p) && porTurno(p) && porTipo(p) && porFiltro(p))
     .sort((a, b) => isoDeBr(b.data).localeCompare(isoDeBr(a.data)) ||
@@ -3009,14 +3098,18 @@ function desenharPendencias(semAnim) {
     lista.innerHTML = Object.keys(porDia).map(d => {
       const doDia = pd.itens.filter(p => p.data === d);
       const tratadas = doDia.filter(p => p.tratado).length;
+      const abertasNaTela = porDia[d].some(p => !p.tratado);
       return `
         <div class="pd-grupo">
-          <h4>${esc(d)} <small>${diaSemana(d)} · ${doDia.length} ${doDia.length === 1 ? "pendência" : "pendências"} no relatório · ${tratadas} ${tratadas === 1 ? "tratada" : "tratadas"}</small></h4>
+          <h4><span>${esc(d)} <small>${diaSemana(d)} · ${doDia.length} ${doDia.length === 1 ? "pendência" : "pendências"} no relatório · ${tratadas} ${tratadas === 1 ? "tratada" : "tratadas"}</small></span>
+            ${abertasNaTela ? `<button class="pd-dia-sel" data-dia="${esc(d)}" onclick="selecionarDiaPd('${esc(d)}')">Marcar do dia</button>` : ""}</h4>
           ${porDia[d].map(p => pendenciaHtml(p, i++, semAnim)).join("")}
         </div>`;
     }).join("");
   }
   document.getElementById("pdCsv").disabled = !pdFiltradas.length;
+  document.getElementById("pdDica").classList.toggle("hidden", !pdFiltradas.some(p => !p.tratado));
+  atualizarSelecaoPd();
 }
 
 function verAnteriores() {
@@ -3026,68 +3119,266 @@ function verAnteriores() {
   recarregarPeriodo("pd");
 }
 
+/* Nome no plural para o grupo da lista: Instrutor -> Instrutores, Orientador -> Orientadores */
+function pluralFuncao(f) {
+  return /s$/i.test(f) ? f : /[rlz]$/i.test(f) ? f + "es" : f + "s";
+}
+
+function pessoaDoCadastro(nome) {
+  return (pd.cadastro || []).find(x => normalizar(x.nome).trim() === normalizar(nome).trim());
+}
+
 function pendenciaHtml(p, i, semAnim) {
   const f = PD_FALTA[faltaDe(p)];
   const sigla = HZ_SIGLA[turnoDe(p.roteiro)];
+  const marcada = pdSel.has(p.id);
+  const resumo = resumoRegistros(p);
+  const marcar = p.tratado ? "" : `onclick="marcarPendencia('${p.id}')" role="checkbox" aria-checked="${marcada}" tabindex="0"
+       onkeydown="if (event.key === ' ' || event.key === 'Enter') { event.preventDefault(); marcarPendencia('${p.id}'); }"`;
+  const acoes = p.tratado ? `
+      <div class="pd-acao">
+        <div class="pd-feito">${ic("checkCirc")}<div><b>TRATADO · ${esc(p.instrutor)}</b><small>por ${esc(p.tratadoPor) || "-"} em ${esc(p.tratadoEm) || "-"}</small></div></div>
+        ${pessoaDoCadastro(p.instrutor) ? `<button class="pd-desfazer" onclick="reenviarWhats('${p.id}')">Reenviar WhatsApp</button>` : ""}
+        <button class="pd-desfazer" onclick="desfazerPendencia('${p.id}')">Desfazer</button>
+      </div>` : "";
   return `
-    <div class="pd-item ${p.tratado ? "tratado" : ""}" style="--cor-f:${f.cor};--fundo-f:${f.fundo};${semAnim ? "" : `animation-delay:${Math.min(i, 12) * 25}ms`}">
+    <div class="pd-item ${p.tratado ? "tratado" : "marcavel"} ${marcada ? "sel" : ""}" data-id="${p.id}" ${marcar}
+         style="--cor-f:${f.cor};--fundo-f:${f.fundo};${semAnim ? "" : `animation-delay:${Math.min(i, 12) * 25}ms`}">
       <div class="pd-info">
+        <span class="caixa ${p.tratado ? "feita" : ""}">${ic("check")}</span>
         <span class="rot-turno">${sigla && sigla !== "—" ? sigla : esc(p.turno || "—")}</span>
         <div class="pd-txt">
           <strong title="${esc(p.roteiro)}">${esc(p.roteiro)}</strong>
-          <small>${esc(p.data)} · ${esc(p.turno)}</small>
+          <small>${esc(p.data)} · ${esc(p.turno)}${resumo ? " · " + esc(resumo) : ""}</small>
         </div>
         <span class="pd-falta">Falta: ${f.rotulo}</span>
-      </div>
-      <div class="pd-acao">
-        ${p.tratado ? `
-          <div class="pd-feito">${ic("checkCirc")}<div><b>TRATADO · ${esc(p.instrutor)}</b><small>por ${esc(p.tratadoPor) || "-"} em ${esc(p.tratadoEm) || "-"}</small></div></div>
-          <button class="pd-desfazer" onclick="tratarPendencia('${p.id}', true)">Desfazer</button>` : `
-          <input class="pd-instrutor" id="pdi-${p.id}" list="pdInstrutores" maxlength="80" placeholder="Instrutor"
-                 aria-label="Instrutor que recebeu a pendência de ${esc(p.roteiro)}" value="${esc(pdRascunho[p.id] || "")}"
-                 oninput="pdRascunho['${p.id}'] = this.value; this.classList.remove('campo-erro')"
-                 onkeydown="if (event.key === 'Enter') tratarPendencia('${p.id}')">
-          <button class="pd-btn" id="pdb-${p.id}" onclick="tratarPendencia('${p.id}')">${ic("check")}TRATADO</button>`}
-      </div>
+      </div>${acoes}
     </div>`;
 }
 
-function tratarPendencia(id, desfazer) {
+/* O que o motorista chegou a registrar no dia, em poucas palavras */
+function resumoRegistros(p) {
+  return (p.registros || []).map(r => (r.acao === "chegada" ? "chegada " : r.acao === "fim" ? "encerramento " : "") + r.horario).join(", ");
+}
+
+/* ---------- Seleção (até PD_MAX_ENVIO por mensagem) ---------- */
+function marcarPendencia(id) {
   const p = pd && pd.itens.find(x => x.id === id);
-  if (!p) return;
-  const campo = document.getElementById("pdi-" + id);
-  const instrutor = desfazer ? "" : campo.value.trim();
-  if (!desfazer && instrutor.length < 2) {
-    campo.classList.add("campo-erro");
-    campo.focus();
-    toast("Digite o nome do instrutor antes de marcar como TRATADO.", "alert", true);
+  if (!p || p.tratado) return;
+  if (pdSel.has(id)) pdSel.delete(id);
+  else if (pdSel.size >= PD_MAX_ENVIO) {
+    toast("Cada mensagem leva até " + PD_MAX_ENVIO + " pendências. Envie estas e depois marque as próximas.", "alert", true);
+    return;
+  } else pdSel.add(id);
+  atualizarSelecaoPd();
+}
+
+/* Marca as pendências em aberto do dia (as que estão na tela) até completar o limite; se já estão todas, desmarca */
+function selecionarDiaPd(data) {
+  const doDia = pdFiltradas.filter(p => p.data === data && !p.tratado);
+  if (doDia.length && doDia.every(p => pdSel.has(p.id))) {
+    doDia.forEach(p => pdSel.delete(p.id));
+  } else {
+    let ficaram = 0;
+    doDia.forEach(p => {
+      if (pdSel.has(p.id)) return;
+      if (pdSel.size < PD_MAX_ENVIO) pdSel.add(p.id); else ficaram++;
+    });
+    if (ficaram) toast("Marcadas " + PD_MAX_ENVIO + " (o limite de uma mensagem). Depois de enviar, marque as outras " + ficaram + ".", "alert");
+  }
+  atualizarSelecaoPd();
+}
+
+function limparSelecaoPd() {
+  pdSel.clear();
+  atualizarSelecaoPd();
+}
+
+/* Pendências marcadas, na ordem da mensagem: data mais antiga primeiro, depois turno e roteiro */
+function selecionadasPd() {
+  return pd.itens.filter(p => pdSel.has(p.id) && !p.tratado)
+    .sort((a, b) => isoDeBr(a.data).localeCompare(isoDeBr(b.data)) ||
+      ordemRota({ turno: pdTurnoDe(a), nome: a.roteiro }, { turno: pdTurnoDe(b), nome: b.roteiro }));
+}
+
+function atualizarSelecaoPd() {
+  if (!pd) return;
+  pd.itens.forEach(p => { if (p.tratado) pdSel.delete(p.id); });
+  const n = pdSel.size;
+  document.querySelectorAll("#pdLista .pd-item.marcavel").forEach(el => {
+    const sel = pdSel.has(el.dataset.id);
+    el.classList.toggle("sel", sel);
+    el.setAttribute("aria-checked", sel);
+  });
+  document.getElementById("pdLista").classList.toggle("cheia", n >= PD_MAX_ENVIO);
+  document.querySelectorAll("#pdLista .pd-dia-sel").forEach(b => {
+    const doDia = pdFiltradas.filter(p => p.data === b.dataset.dia && !p.tratado);
+    b.textContent = doDia.length && doDia.every(p => pdSel.has(p.id)) ? "Desmarcar do dia" : "Marcar do dia";
+  });
+
+  const mostrar = n > 0 && vista === "pendencias";
+  document.getElementById("pdBarra").classList.toggle("hidden", !mostrar);
+  document.body.classList.toggle("pdsel", mostrar);
+  if (!n) return;
+  document.getElementById("pdQtd").textContent = n + (n === 1 ? " pendência marcada" : " pendências marcadas");
+  document.getElementById("pdLim").textContent = n >= PD_MAX_ENVIO ? "limite de " + PD_MAX_ENVIO + " por mensagem" : "até " + PD_MAX_ENVIO + " por mensagem";
+  document.getElementById("pdLim").classList.toggle("cheio", n >= PD_MAX_ENVIO);
+  const temCadastro = !!(pd.cadastro || []).length;
+  document.getElementById("pdEnviar").innerHTML = ic("whats") + "Enviar WhatsApp" + (n > 1 ? " (" + n + ")" : "");
+  document.getElementById("pdEnviar").classList.toggle("hidden", !temCadastro);
+  document.getElementById("pdSo").textContent = temCadastro ? "Só marcar TRATADO" : "Marcar TRATADO";
+  document.getElementById("pdSo").className = temCadastro ? "bl-sec" : "bl-ok";
+}
+
+/* Campo "Enviar para": lista de instrutores e orientadores (ou nome digitado, sem cadastro) */
+function desenharDestinoPd() {
+  const cad = pd.cadastro || [];
+  const caixa = document.getElementById("pdPara");
+  if (!cad.length) {
+    caixa.innerHTML = `<input id="pdNome" list="pdInstrutores" maxlength="80" placeholder="Nome do instrutor" aria-label="Instrutor que recebeu as pendências"
+      value="${esc(pdPessoa)}" oninput="pdPessoa = this.value; this.classList.remove('campo-erro')">`;
     return;
   }
-  if (desfazer && !confirm("Desfazer o TRATADO de " + p.roteiro + " (" + p.data + ")?")) return;
-  const btn = document.getElementById("pdb-" + id);
-  if (btn) { btn.disabled = true; btn.lastChild.textContent = "Gravando..."; }
+  if (!cad[pdPessoa]) pdPessoa = "";
+  const grupos = {};
+  cad.forEach((x, k) => {
+    const g = x.funcao || "Outros";
+    (grupos[g] = grupos[g] || []).push(`<option value="${k}" ${String(k) === pdPessoa ? "selected" : ""}>${esc(x.nome)}</option>`);
+  });
+  caixa.innerHTML = `
+    <select id="pdPessoa" aria-label="Quem recebe as pendências" onchange="pdPessoa = this.value; this.classList.remove('campo-erro')">
+      <option value="">Enviar para…</option>
+      ${Object.keys(grupos).map(g => `<optgroup label="${esc(pluralFuncao(g))}">${grupos[g].join("")}</optgroup>`).join("")}
+    </select>`;
+}
 
-  chamarApi({ acao: "tratarPendencia", id: p.id, data: p.data, roteiro: p.roteiro, instrutor, operador, desfazer: !!desfazer })
+/* ---------- Mensagem e gravação ---------- */
+const PD_FALTA_MSG = { chegada: "chegada à fábrica", fim: "encerramento do roteiro", ambos: "chegada à fábrica e encerramento do roteiro" };
+
+/* Mensagem que vai para o WhatsApp: uma pendência ou várias, numeradas */
+function textoWhats(lista, ins) {
+  const uma = lista.length === 1;
+  const linhas = [
+    "Olá, " + primeiroNome(ins.nome) + "!",
+    "",
+    uma ? "*Pendência de registro de roteiro*" : "*Pendências de registro de roteiros* (" + lista.length + ")",
+    ""
+  ];
+  lista.forEach((p, k) => {
+    const regs = (p.registros || []).map(r =>
+      (r.acao === "chegada" ? "chegada" : r.acao === "fim" ? "encerramento" : "registro") + " às " + r.horario +
+      (r.motorista ? ", motorista " + r.motorista : "") + (r.veiculo ? ", veículo " + r.veiculo : ""));
+    linhas.push(
+      (uma ? "" : (k + 1) + ". ") + "*" + p.roteiro + "*",
+      p.data + " (" + diaSemana(p.data) + ")" + (p.turno ? " · " + p.turno : ""),
+      "Falta: " + PD_FALTA_MSG[faltaDe(p)],
+      regs.length ? "Registrado: " + regs.join("; ") : "Nenhum registro do motorista nesse dia",
+      ""
+    );
+  });
+  linhas.push(
+    uma ? "Pode verificar com o motorista e regularizar o registro, por favor?"
+        : "Pode verificar com os motoristas e regularizar esses registros, por favor?",
+    "",
+    "Painel de Atendimento BYD · " + operador
+  );
+  return linhas.join("\n");
+}
+
+function abrirWhats(ins, lista) {
+  const link = linkWhats(ins.telefone);
+  if (!link) {
+    toast("O telefone de " + ins.nome + " não parece válido (" + ins.telefone + "). Confira o cadastro.", "alert", true);
+    return false;
+  }
+  window.open(link + "?text=" + encodeURIComponent(textoWhats(lista, ins)), "_blank", "noopener");
+  return true;
+}
+
+/* Botões da barra: abre o WhatsApp com todas as marcadas (ou não) e grava TRATADO em todas */
+function enviarSelecaoPd(comWhats) {
+  const lista = selecionadasPd();
+  if (!lista.length) return;
+  const cad = pd.cadastro || [];
+  let ins = null, nome;
+  if (cad.length) {
+    ins = cad[pdPessoa];
+    if (!ins) {
+      const sel = document.getElementById("pdPessoa");
+      sel.classList.add("campo-erro");
+      sel.focus();
+      toast("Escolha o instrutor ou orientador que vai receber.", "alert", true);
+      return;
+    }
+    nome = ins.nome;
+  } else {
+    nome = String(pdPessoa).trim();
+    if (nome.length < 2) {
+      const campo = document.getElementById("pdNome");
+      campo.classList.add("campo-erro");
+      campo.focus();
+      toast("Digite o nome do instrutor antes de marcar como TRATADO.", "alert", true);
+      return;
+    }
+  }
+  // o WhatsApp abre antes de gravar, para o navegador não bloquear a nova aba
+  if (comWhats && !abrirWhats(ins, lista)) return;
+  const botoes = ["pdEnviar", "pdSo"].map(b => document.getElementById(b));
+  botoes.forEach(b => { b.disabled = true; });
+
+  chamarApi({
+    acao: "tratarPendencias", instrutor: nome, operador, via: comWhats ? "WhatsApp" : "",
+    itens: lista.map(p => ({ id: p.id, data: p.data, roteiro: p.roteiro }))
+  })
     .then(r => {
       if (r.senha === false) { sair(); return; }
-      if (!r.ok) {
-        if (r.jaTratado) carregarPendencias(false, true);
-        throw new Error(r.erro || "Não foi possível gravar.");
-      }
-      Object.assign(p, { id: r.id, instrutor: r.instrutor, tratado: r.tratado, tratadoPor: r.tratadoPor, tratadoEm: r.tratadoEm });
-      if (r.instrutor && pd.instrutores.indexOf(r.instrutor) === -1) {
-        pd.instrutores.push(r.instrutor);
+      if (!r.ok) throw new Error(r.erro === "Ação desconhecida."
+        ? "O Apps Script publicado ainda é o anterior. Faça Implantar > Gerenciar implantações > Editar > Versão: Nova versão."
+        : r.erro || "Não foi possível gravar.");
+      const outros = [];
+      r.itens.forEach((x, k) => {
+        const p = lista[k];
+        pdSel.delete(p.id);
+        if (x.ok || x.jaTratado) {
+          Object.assign(p, { id: x.id, instrutor: x.instrutor || p.instrutor, tratado: true, tratadoPor: x.tratadoPor, tratadoEm: x.tratadoEm });
+        }
+        if (!x.ok) outros.push(p.roteiro + (x.jaTratado ? " (já tratada por " + (x.tratadoPor || "outra pessoa") + ")" : ""));
+      });
+      if (nome && pd.instrutores.indexOf(nome) === -1) {
+        pd.instrutores.push(nome);
         pd.instrutores.sort();
         document.getElementById("pdInstrutores").innerHTML = pd.instrutores.map(n => `<option value="${esc(n)}">`).join("");
       }
-      delete pdRascunho[id];
       desenharPendencias(true);
-      toast(r.tratado ? p.roteiro + " tratado (" + r.instrutor + ")" : "TRATADO desfeito", r.tratado ? "check" : "refresh");
+      const ok = r.tratados;
+      if (ok) toast(comWhats
+        ? (ok === 1 ? "1 pendência enviada" : ok + " pendências enviadas") + " para " + nome
+        : (ok === 1 ? "1 pendência marcada" : ok + " pendências marcadas") + " como TRATADO (" + nome + ")", "check");
+      if (outros.length) toast("Não marcadas: " + outros.join("; "), "alert", true);
     })
-    .catch(err => {
-      toast(err.message, "alert", true);
-      if (btn) { btn.disabled = false; btn.lastChild.textContent = "TRATADO"; }
-    });
+    .catch(err => toast(err.message, "alert", true))
+    .finally(() => botoes.forEach(b => { b.disabled = false; }));
+}
+
+/* Abre de novo a mensagem de uma pendência já tratada (para o mesmo instrutor) */
+function reenviarWhats(id) {
+  const p = pd && pd.itens.find(x => x.id === id);
+  const ins = p && pessoaDoCadastro(p.instrutor);
+  if (ins) abrirWhats(ins, [p]);
+}
+
+function desfazerPendencia(id) {
+  const p = pd && pd.itens.find(x => x.id === id);
+  if (!p || !confirm("Desfazer o TRATADO de " + p.roteiro + " (" + p.data + ")?")) return;
+  chamarApi({ acao: "tratarPendencia", id: p.id, data: p.data, roteiro: p.roteiro, operador, desfazer: true })
+    .then(r => {
+      if (r.senha === false) { sair(); return; }
+      if (!r.ok) throw new Error(r.erro || "Não foi possível gravar.");
+      Object.assign(p, { id: r.id, instrutor: "", tratado: false, tratadoPor: "", tratadoEm: "" });
+      desenharPendencias(true);
+      toast("TRATADO desfeito", "refresh");
+    })
+    .catch(err => toast(err.message, "alert", true));
 }
 
 function baixarPendencias() {
