@@ -1321,6 +1321,7 @@ body.lote .toasts { bottom: 90px; }
 body.perfil-byd .vistas button[data-vista="horarios"],
 body.perfil-byd .vistas button[data-vista="pendencias"],
 body.perfil-byd .lista-topo h3 .btn-lote { display: none !important; }
+body:not(.perfil-master) .so-master { display: none !important; }
 .faixa-leitura {
   display: flex;
   gap: 8px;
@@ -1623,7 +1624,8 @@ body.pdsel .toasts { bottom: 90px; }
     <section class="lista-painel" id="painelAbertos" style="--cor-cont: var(--laranja)">
       <div class="lista-topo">
         <h3><i data-ic="inbox"></i>Atendimentos em aberto <span class="contagem" id="contAbertos">0</span>
-          <button class="btn-lote" onclick="alternarLote()" title="Selecionar vários chamados para encerrar de uma vez"><i data-ic="checks"></i><span id="btnLoteTxt">Encerrar em lote</span></button></h3>
+          <button class="btn-lote" id="btnAssumirLote" onclick="alternarLote('assumir')" title="Selecionar vários chamados para assumir de uma vez"><i data-ic="headset"></i><span id="btnLoteTxt">Assumir em lote</span></button>
+          <button class="btn-lote so-master" id="btnEncerrarLote" onclick="alternarLote('encerrar')" title="Master: selecionar vários chamados para encerrar de uma vez"><i data-ic="checks"></i><span id="btnEncerrarTxt">Encerrar em lote</span></button></h3>
         <div class="seg" id="segEstado"></div>
         <div class="busca"><i data-ic="search"></i><input type="search" id="buscaAbertos" placeholder="Buscar por nome, protocolo, roteiro..." oninput="desenharListas()"></div>
       </div>
@@ -1716,9 +1718,9 @@ body.pdsel .toasts { bottom: 90px; }
   </div>
   <div class="bl-acoes">
     <button class="bl-sec" id="blTodos" onclick="selecionarVisiveis()">Selecionar todos</button>
-    <button class="bl-sec" id="blProv" onclick="selecionarComProvidencia()">Já têm providência</button>
+    <button class="bl-sec" id="blProv" onclick="selecionarComProvidencia()">Só os da fila</button>
     <button class="bl-sec" onclick="alternarLote()">Cancelar</button>
-    <button class="bl-ok" id="blOk" onclick="abrirModalLote()" disabled>Encerrar</button>
+    <button class="bl-ok" id="blOk" onclick="confirmarLote()" disabled>Assumir</button>
   </div>
 </div>
 
@@ -1836,7 +1838,8 @@ let novos = new Set();
 let timer = null;
 let abertoNaGaveta = null;
 let filtroEstado = "";      // "", "fila", "andamento" ou "meus"
-let modoLote = false;       // encerrar em lote
+let modoLote = false;       // seleção em lote ligada
+let tipoLote = "assumir";   // "assumir" (todos) ou "encerrar" (só master)
 let selecionados = new Set();
 let visiveisAbertos = [];
 
@@ -1957,6 +1960,7 @@ function aplicarPerfil() {
   const tag = document.getElementById("tagPerfil");
   tag.textContent = ehMaster() ? "Master" : ehByd() ? "BYD · visualização" : "";
   tag.className = "tag-perfil" + (ehByd() ? " byd" : "") + (ehMaster() || ehByd() ? "" : " hidden");
+  if (modoLote && tipoLote === "encerrar" && !ehMaster()) alternarLote(); // encerrar em lote é só do master
   if (ehByd()) {
     if (modoLote) alternarLote();
     if (vista !== "chamados") mostrarVista("chamados");
@@ -2353,13 +2357,19 @@ function mudarResponsavel(c, extra) {
 }
 
 /* ENCERRAR EM LOTE */
-function alternarLote() {
-  if (ehByd() && !modoLote) return;
-  modoLote = !modoLote;
+function alternarLote(tipo) {
+  if (modoLote && (!tipo || tipo === tipoLote)) {
+    modoLote = false;
+  } else {
+    if (ehByd() || (tipo === "encerrar" && !ehMaster())) return;
+    modoLote = true;
+    tipoLote = tipo || "assumir";
+  }
   selecionados.clear();
   document.body.classList.toggle("lote", modoLote);
   document.getElementById("barraLote").classList.toggle("hidden", !modoLote);
-  document.getElementById("btnLoteTxt").textContent = modoLote ? "Sair do lote" : "Encerrar em lote";
+  document.getElementById("btnLoteTxt").textContent = modoLote && tipoLote === "assumir" ? "Sair do lote" : "Assumir em lote";
+  document.getElementById("btnEncerrarTxt").textContent = modoLote && tipoLote === "encerrar" ? "Sair do lote" : "Encerrar em lote";
   if (!modoLote) document.getElementById("blAte").value = "";
   abaMovel("abertos");
   desenharListas();
@@ -2377,7 +2387,8 @@ function selecionarVisiveis() {
 }
 
 function selecionarComProvidencia() {
-  visiveisAbertos.filter(c => c.providencia).forEach(c => selecionados.add(c.id));
+  // assumir: marca os que estão na fila; encerrar (master): os que já têm providência
+  visiveisAbertos.filter(c => tipoLote === "assumir" ? estadoDe(c) === "fila" : c.providencia).forEach(c => selecionados.add(c.id));
   desenharListas(true);
 }
 
@@ -2389,10 +2400,67 @@ function desenharBarraLote() {
   const todos = visiveisAbertos.length && visiveisAbertos.every(c => selecionados.has(c.id));
   document.getElementById("blQtd").textContent = n === 1 ? "1 selecionado" : n + " selecionados";
   document.getElementById("blTodos").textContent = todos ? "Limpar seleção" : "Selecionar todos da lista (" + visiveisAbertos.length + ")";
-  document.getElementById("blProv").textContent = "Já têm providência (" + visiveisAbertos.filter(c => c.providencia).length + ")";
+  const assumir = tipoLote === "assumir";
+  document.getElementById("blProv").textContent = assumir
+    ? "Só os da fila (" + visiveisAbertos.filter(c => estadoDe(c) === "fila").length + ")"
+    : "Já têm providência (" + visiveisAbertos.filter(c => c.providencia).length + ")";
   const ok = document.getElementById("blOk");
+  const verbo = assumir ? "Assumir" : "Encerrar";
   ok.disabled = !n;
-  ok.textContent = n ? "Encerrar " + n : "Encerrar";
+  ok.textContent = n ? verbo + " " + n : verbo;
+}
+
+function confirmarLote() {
+  if (tipoLote === "encerrar") abrirModalLote(); else assumirLote();
+}
+
+/* ASSUMIR EM LOTE: grava o nome do operador em Atendimento nos chamados marcados */
+async function assumirLote() {
+  if (ehByd()) return;
+  const itens = dados.abertos.filter(c => selecionados.has(c.id));
+  if (!itens.length) return;
+  const deOutros = itens.filter(c => c.atendente && !ehMeu(c));
+  let forcar = false;
+  if (deOutros.length) {
+    forcar = confirm(deOutros.length + (deOutros.length === 1 ? " chamado marcado já está" : " chamados marcados já estão") +
+      " com outra pessoa (" + Array.from(new Set(deOutros.map(c => primeiroNome(c.atendente)))).join(", ") + ").\n\n" +
+      "OK = assumir esses também\nCancelar = assumir só os outros");
+    if (!forcar && deOutros.length === itens.length) return;
+  }
+  const btn = document.getElementById("blOk");
+  btn.disabled = true;
+  const PARTE = 50;
+  let feitos = 0, ignorados = 0, comOutros = 0;
+  try {
+    for (let i = 0; i < itens.length; i += PARTE) {
+      btn.textContent = "Assumindo " + Math.min(i + PARTE, itens.length) + " de " + itens.length + "...";
+      const parte = itens.slice(i, i + PARTE).filter(c => forcar || !c.atendente || ehMeu(c));
+      if (!parte.length) continue;
+      const r = await chamarApi({ acao: "assumirLote", atendente: operador, forcar, itens: parte.map(c => ({ id: c.id, conferir: c.abertoTxt })) });
+      if (r.senha === false) { sair(); return; }
+      if (!r.ok) throw new Error(r.erro === "Ação desconhecida."
+        ? "O Apps Script publicado ainda é o anterior. Faça Implantar > Gerenciar implantações > Editar > Versão: Nova versão."
+        : r.erro || "Não foi possível assumir.");
+      const ok = new Set(r.ids);
+      dados.abertos.forEach(c => { if (ok.has(c.id)) c.atendente = r.atendente; });
+      (r.comOutros || []).forEach(x => { const c = dados.abertos.find(y => y.id === x.id); if (c) c.atendente = x.atendente; });
+      feitos += r.assumidos;
+      ignorados += r.ignorados;
+      comOutros += (r.comOutros || []).length;
+    }
+  } catch (err) {
+    toast(err.message + (feitos ? " " + feitos + " já foram assumidos antes do erro." : ""), "alert", true);
+    btn.disabled = false;
+    desenharTudo(true);
+    carregar(false, true);
+    return;
+  }
+  alternarLote();
+  desenharTudo(true);
+  carregar(false, true);
+  toast(feitos + (feitos === 1 ? " chamado está com você" : " chamados estão com você"), "headset");
+  const pulados = ignorados + comOutros + (forcar ? 0 : deOutros.length);
+  if (pulados) toast(pulados + (pulados === 1 ? " não foi assumido" : " não foram assumidos") + " (já finalizados ou com outra pessoa).", "alert");
 }
 
 function abrirModalLote() {
