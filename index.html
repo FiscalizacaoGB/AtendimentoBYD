@@ -1305,6 +1305,35 @@ body.lote .toasts { bottom: 90px; }
 }
 
 .pd-dica .ic { width: 17px; height: 17px; flex: 0 0 auto; color: #1faa59; }
+.pd-dica .pd-dia-sel { margin-left: auto; flex: 0 0 auto; }
+
+/* PERFIS: master (Lucas) e BYD (só visualização) */
+.tag-perfil {
+  font-size: 11px;
+  font-weight: bold;
+  border-radius: 8px;
+  padding: 3px 7px;
+  background: var(--dourado);
+  color: var(--azul);
+  white-space: nowrap;
+}
+.tag-perfil.byd { background: #e0f2fe; color: #075985; }
+body.perfil-byd .vistas button[data-vista="horarios"],
+body.perfil-byd .vistas button[data-vista="pendencias"],
+body.perfil-byd .lista-topo h3 .btn-lote { display: none !important; }
+.faixa-leitura {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  font-size: 13px;
+  color: #075985;
+  background: #f0f9ff;
+  border: 1px solid #bae6fd;
+  border-radius: 10px;
+  padding: 10px 12px;
+  margin-top: 10px;
+}
+.faixa-leitura .ic { width: 16px; height: 16px; }
 
 .pd-barra .pd-lim { font-size: 12px; color: #cbd5e1; }
 .pd-barra .pd-lim.cheio { color: #fbbf24; font-weight: bold; }
@@ -1546,7 +1575,7 @@ body.pdsel .toasts { bottom: 90px; }
   <div class="titulo">Painel da Equipe<small>Atendimento BYD</small></div>
   <div class="direita hidden" id="topoLogado">
     <button class="btn-icone" id="btnAtualizar" onclick="atualizar()" title="Atualizar"><i data-ic="refresh"></i></button>
-    <div class="operador"><span class="avatar" id="avatar"></span><span class="nome-op" id="nomeOp"></span></div>
+    <div class="operador"><span class="avatar" id="avatar"></span><span class="nome-op" id="nomeOp"></span><span class="tag-perfil hidden" id="tagPerfil"></span></div>
     <button class="btn-icone" onclick="sair()" title="Sair"><i data-ic="logout"></i></button>
   </div>
 </header>
@@ -1559,7 +1588,7 @@ body.pdsel .toasts { bottom: 90px; }
     <p>Entre para ver e responder os chamados dos passageiros.</p>
     <label for="lNome">Seu nome</label>
     <input type="text" id="lNome" autocomplete="name" maxlength="80" placeholder="Como vai aparecer em Atendimento">
-    <label for="lSenha">Senha da equipe</label>
+    <label for="lSenha">Senha</label>
     <input type="password" id="lSenha" autocomplete="current-password">
     <button type="submit" id="btnEntrar"><i data-ic="login"></i><span>Entrar</span></button>
     <div class="erro-login" id="erroLogin"></div>
@@ -1663,6 +1692,7 @@ body.pdsel .toasts { bottom: 90px; }
       <button class="btn-csv" id="pdCsv" onclick="baixarPendencias()" disabled><i data-ic="download"></i><span class="so-largo">Baixar</span>CSV</button>
     </div>
     <div class="pd-aviso hidden" id="pdAntes"></div>
+    <div class="pd-aviso pd-info hidden" id="pdNaoUteis"></div>
     <div class="pd-aviso pd-info hidden" id="pdSemCadastro">
       <i data-ic="whats"></i><span>Para escolher o instrutor e enviar pelo WhatsApp, cadastre os instrutores e orientadores (nome e telefone)
       em <b>INSTRUTORES</b> no Atendimento.gs ou numa aba <b>Instrutores</b> da planilha de atendimento. Até lá, marque as pendências e digite o nome do instrutor.</span>
@@ -1670,12 +1700,12 @@ body.pdsel .toasts { bottom: 90px; }
     <div class="kpis" id="pdKpis"></div>
     <div class="seg pd-seg" id="pdSeg"></div>
     <div class="filtros" id="pdTurnos"></div>
-    <p class="pd-dica hidden" id="pdDica"><i data-ic="whats"></i><span>Marque até 10 pendências (ou use <b>Marcar do dia</b>), escolha quem recebe e clique em
-      <b>Enviar WhatsApp</b>: vai tudo numa mensagem só, e elas ficam como TRATADO. Cada pessoa recebe no máximo 10 a cada 4 horas.</span></p>
+    <p class="pd-dica hidden" id="pdDica"></p>
     <div class="pd-lista" id="pdLista"></div>
     <datalist id="pdInstrutores"></datalist>
     <p class="hz-nota"><i data-ic="alert"></i><span>As pendências vêm do relatório que o Apps Script dos motoristas gera todo dia à meia-noite
-      (roteiros sem chegada e/ou sem encerramento no dia anterior). O TRATADO e o instrutor ficam gravados no próprio relatório.</span></p>
+      (roteiros sem chegada e/ou sem encerramento no dia anterior). Só entram dias úteis: sábados, domingos e feriados ficam de fora.
+      O TRATADO e o instrutor ficam gravados no próprio relatório.</span></p>
   </div>
 </main>
 
@@ -1796,6 +1826,9 @@ function normalizar(txt) {
 /* ESTADO */
 let senha = "";
 let operador = "";
+let perfil = "equipe";      // "equipe", "master" (sem limite nas pendências) ou "byd" (só visualiza os chamados)
+const ehByd = () => perfil === "byd";
+const ehMaster = () => perfil === "master";
 let dados = { abertos: [], historico: [], totalFinalizados: 0 };
 let filtroTipo = "";
 let idsConhecidos = null;   // para marcar chamados novos
@@ -1870,9 +1903,11 @@ function entrar(ev) {
           : r.erro || "Não foi possível entrar.");
       }
       operador = nome;
+      perfil = r.perfil || "equipe";
       try {
         localStorage.setItem("equipeBydNome", nome);
         sessionStorage.setItem("equipeBydSenha", s);
+        sessionStorage.setItem("equipeBydPerfil", perfil);
       } catch (e) {}
       abrirPainel();
     })
@@ -1881,8 +1916,10 @@ function entrar(ev) {
 }
 
 function sair() {
-  try { sessionStorage.removeItem("equipeBydSenha"); } catch (e) {}
+  try { sessionStorage.removeItem("equipeBydSenha"); sessionStorage.removeItem("equipeBydPerfil"); } catch (e) {}
   senha = "";
+  perfil = "equipe";
+  aplicarPerfil();
   clearInterval(timer);
   fecharGaveta();
   if (modoLote) alternarLote();
@@ -1901,14 +1938,30 @@ function abrirPainel() {
   const h = new Date().getHours();
   document.getElementById("saudacao").textContent =
     (h < 12 ? "Bom dia" : h < 18 ? "Boa tarde" : "Boa noite") + ", " + operador.split(" ")[0] + "!";
+  aplicarPerfil();
   mostrarEsqueleto();
   carregar(false);
-  if (location.hash === "#horarios" || location.hash === "#pendencias") mostrarVista(location.hash.slice(1));
+  if (!ehByd() && (location.hash === "#horarios" || location.hash === "#pendencias")) mostrarVista(location.hash.slice(1));
+  else mostrarVista("chamados");
   clearInterval(timer);
   timer = setInterval(() => {
     carregar(false, true);
     if (vista === "horarios" && document.getElementById("hzAte").value >= hojeISO()) carregarHorarios(false, true);
   }, ATUALIZAR_A_CADA);
+}
+
+/* Mostra/esconde o que cada perfil pode usar (o Apps Script confere de novo em cada ação) */
+function aplicarPerfil() {
+  document.body.classList.toggle("perfil-byd", ehByd());
+  document.body.classList.toggle("perfil-master", ehMaster());
+  const tag = document.getElementById("tagPerfil");
+  tag.textContent = ehMaster() ? "Master" : ehByd() ? "BYD · visualização" : "";
+  tag.className = "tag-perfil" + (ehByd() ? " byd" : "") + (ehMaster() || ehByd() ? "" : " hidden");
+  if (ehByd()) {
+    if (modoLote) alternarLote();
+    if (vista !== "chamados") mostrarVista("chamados");
+    if (filtroEstado === "meus") filtroEstado = "";
+  }
 }
 
 function iniciais(nome) {
@@ -1924,6 +1977,12 @@ function carregar(manual, silencioso) {
     .then(r => {
       if (r.senha === false) { sair(); document.getElementById("erroLogin").textContent = r.erro; return; }
       if (!r.ok) throw new Error(r.erro || "Erro ao carregar.");
+      if (r.perfil && r.perfil !== perfil) {
+        perfil = r.perfil;
+        try { sessionStorage.setItem("equipeBydPerfil", perfil); } catch (e) {}
+        aplicarPerfil();
+        if (abertoNaGaveta) fecharGaveta();
+      }
 
       // marca os chamados que chegaram desde a última atualização
       const ids = new Set(r.abertos.map(c => c.id));
@@ -2051,7 +2110,7 @@ function filtrarEstado(estado, alternar) {
 function desenharSeg() {
   const n = { "": dados.abertos.length, fila: 0, andamento: 0, meus: 0 };
   dados.abertos.forEach(c => { n[estadoDe(c)]++; if (ehMeu(c)) n.meus++; });
-  const opcoes = [["", "Todos"], ["fila", "Na fila"], ["andamento", "Em atendimento"], ["meus", "Comigo"]];
+  const opcoes = [["", "Todos"], ["fila", "Na fila"], ["andamento", "Em atendimento"]].concat(ehByd() ? [] : [["meus", "Comigo"]]);
   document.getElementById("segEstado").innerHTML = opcoes.map(([k, rotulo]) =>
     `<button class="${filtroEstado === k ? "ativo" : ""}" onclick="filtrarEstado('${k}')">${rotulo} <b>${n[k]}</b></button>`).join("");
 }
@@ -2178,8 +2237,8 @@ function abrirGaveta(id, finalizado, semAnim) {
           <div class="dado">${ic("phone")}<div><b>Telefone</b>${esc(c.telefone) || "-"}</div></div>
           <div class="dado">${ic("home")}<div><b>Endereço</b>${esc(c.endereco) || "-"}</div></div>
           <div class="acoes-contato">
-            ${whats ? `<a class="whats" href="${whats}" target="_blank" rel="noopener">${ic("whats")}WhatsApp</a>` : ""}
-            ${tel ? `<a href="tel:${esc(tel)}">${ic("phone")}Ligar</a>` : ""}
+            ${whats && !ehByd() ? `<a class="whats" href="${whats}" target="_blank" rel="noopener">${ic("whats")}WhatsApp</a>` : ""}
+            ${tel && !ehByd() ? `<a href="tel:${esc(tel)}">${ic("phone")}Ligar</a>` : ""}
             ${maps ? `<a href="${esc(maps)}" target="_blank" rel="noopener">${ic("pin")}Localização enviada</a>` : ""}
             ${mapsEndereco ? `<a href="${mapsEndereco}" target="_blank" rel="noopener">${ic("map")}Endereço no Maps</a>` : ""}
           </div>
@@ -2190,7 +2249,16 @@ function abrirGaveta(id, finalizado, semAnim) {
           <div class="descricao">${esc(c.descricao) || "(sem descrição)"}</div>
         </div>
 
-        ${finalizado ? `
+        ${!finalizado && ehByd() ? `
+          <div class="secao">
+            <h4>Andamento</h4>
+            <div class="resolvido">
+              <div class="dado">${ic("headset")}<div><b>Situação</b>${estado === "fila" ? "Na fila (ninguém assumiu ainda)" : "Em atendimento"}</div></div>
+              <div class="dado">${ic("user")}<div><b>Atendente</b>${esc(c.atendente) || "-"}</div></div>
+              <div class="dado">${ic("text")}<div><b>Providência até agora</b><span style="white-space:pre-wrap">${esc(c.providencia) || "-"}</span></div></div>
+            </div>
+            <div class="faixa-leitura">${ic("alert")}Acesso só para visualização: não é possível assumir, responder ou finalizar.</div>
+          </div>` : finalizado ? `
           <div class="secao">
             <h4>Atendimento</h4>
             <div class="resolvido">
@@ -2220,7 +2288,7 @@ function abrirGaveta(id, finalizado, semAnim) {
           </div>`}
       </div>
 
-      ${finalizado ? "" : `
+      ${finalizado || ehByd() ? "" : `
         <div class="gaveta-rodape" id="gavetaRodape">
           ${!c.atendente
             ? `<button class="btn-assumir" id="btnAssumir" onclick="assumir(false)" title="Grava seu nome em Atendimento">${ic("headset")}<span>Assumir</span></button>`
@@ -2233,6 +2301,7 @@ function abrirGaveta(id, finalizado, semAnim) {
   desenharListas(true);
   const campo = document.getElementById("gProvidencia");
   if (campo && !semAnim) setTimeout(() => campo.focus(), 300);
+  else if (!campo) document.querySelector(".gaveta .fechar").focus();
 }
 
 /* Redesenha a gaveta sem perder o que já foi digitado */
@@ -2250,7 +2319,7 @@ function redesenharGaveta(c) {
 /* ASSUMIR / DEVOLVER À FILA */
 function assumir(forcar) {
   const c = abertoNaGaveta;
-  if (!c) return;
+  if (!c || ehByd()) return;
   if (forcar && !confirm("Este chamado está com " + c.atendente + ". Quer assumir no lugar?")) return;
   mudarResponsavel(c, { atendente: operador, forcar: !!forcar });
 }
@@ -2285,6 +2354,7 @@ function mudarResponsavel(c, extra) {
 
 /* ENCERRAR EM LOTE */
 function alternarLote() {
+  if (ehByd() && !modoLote) return;
   modoLote = !modoLote;
   selecionados.clear();
   document.body.classList.toggle("lote", modoLote);
@@ -2449,7 +2519,7 @@ function usarResposta(i) {
 
 function finalizar() {
   const c = abertoNaGaveta;
-  if (!c) return;
+  if (!c || ehByd()) return;
   const at = document.getElementById("gAtendente");
   const pr = document.getElementById("gProvidencia");
   const erro = document.getElementById("gErro");
@@ -2521,6 +2591,7 @@ let vista = "chamados";
 const VISTAS = { chamados: "vistaChamados", horarios: "vistaHorarios", pendencias: "vistaPendencias" };
 
 function mostrarVista(v) {
+  if (ehByd()) v = "chamados"; // BYD só vê a aba Chamados
   vista = v;
   document.querySelectorAll(".vistas button").forEach(b => b.classList.toggle("ativo", b.dataset.vista === v));
   Object.keys(VISTAS).forEach(n => document.getElementById(VISTAS[n]).classList.toggle("hidden", v !== n));
@@ -2528,11 +2599,19 @@ function mostrarVista(v) {
   if (pd) atualizarSelecaoPd();
   try { history.replaceState(null, "", v === "chamados" ? location.pathname + location.search : "#" + v); } catch (e) {}
   if (v === "horarios" && !hz) definirPeriodo("hz", 0, 0);
-  if (v === "pendencias" && !pd) definirPeriodo("pd", -1, -1);
+  if (v === "pendencias" && !pd) { const n = -diasAteDiaUtil(); definirPeriodo("pd", n, n); }
+}
+
+/* Quantos dias voltar até o último dia de semana (seg a sex). Feriado o Apps Script avisa e sugere o dia útil. */
+function diasAteDiaUtil() {
+  let n = 1;
+  while ([0, 6].indexOf(new Date(somaDias(hojeISO(), -n) + "T12:00:00").getDay()) > -1) n++;
+  return n;
 }
 
 function atualizar() {
-  if (vista === "horarios") carregarHorarios(true);
+  if (ehByd()) carregar(true);
+  else if (vista === "horarios") carregarHorarios(true);
   else if (vista === "pendencias") carregarPendencias(true);
   else carregar(true);
 }
@@ -2986,6 +3065,8 @@ let pdTurno = "";
 let pdTipo = "";            // filtro pelos cartões: "chegada" ou "fim"
 let pdFiltradas = [];
 const PD_MAX_ENVIO = 10;     // pendências por mensagem (igual ao MAX_PENDENCIAS_ENVIO do Atendimento.gs)
+const PD_PARTE_MASTER = 50;  // master: grava de 50 em 50 (igual ao MAX_PENDENCIAS_MASTER do Atendimento.gs)
+const pdLimiteSel = () => ehMaster() ? Infinity : PD_MAX_ENVIO;
 const pdSel = new Set();    // pendências marcadas para enviar juntas
 let pdPessoa = "";          // quem recebe (posição no cadastro); fica escolhido para o próximo envio
 
@@ -3082,15 +3163,32 @@ function desenharPendencias(semAnim) {
   aviso.classList.toggle("hidden", !pd.abertasAntes);
   document.getElementById("pdSemCadastro").classList.toggle("hidden", !!(pd.cadastro || []).length);
 
+  const naoUteis = pd.diasNaoUteis || [];
+  const avisoNu = document.getElementById("pdNaoUteis");
+  avisoNu.innerHTML = naoUteis.length
+    ? `${ic("calendar")}<span>Só dias úteis entram no relatório. Ficaram de fora: ${naoUteis.slice(0, 8).map(x => esc(x.data.slice(0, 5)) + " (" + esc(x.motivo) + ")").join(", ")}${naoUteis.length > 8 ? " e mais " + (naoUteis.length - 8) : ""}.</span>`
+    : "";
+  avisoNu.classList.toggle("hidden", !naoUteis.length);
+
+  document.getElementById("pdDica").innerHTML = ehMaster()
+    ? `${ic("checks")}<span><b>Master:</b> marque quantas quiser (ou <b>Marcar do dia</b>) e clique em <b>Finalizar sem instrutor</b>, ou escolha alguém para registrar o nome. O WhatsApp continua levando até ${PD_MAX_ENVIO} por mensagem.</span>
+       <button class="pd-dia-sel" id="pdTodas" onclick="selecionarTodasPd()">Marcar todas da lista</button>`
+    : `${ic("whats")}<span>Marque até ${PD_MAX_ENVIO} pendências (ou use <b>Marcar do dia</b>), escolha quem recebe e clique em
+      <b>Enviar WhatsApp</b>: vai tudo numa mensagem só, e elas ficam como TRATADO. Cada pessoa recebe no máximo ${limitePd().porPessoa} a cada ${limitePd().horas} horas.</span>`;
+
   pdFiltradas = pd.itens.filter(p => porBusca(p) && porTurno(p) && porTipo(p) && porFiltro(p))
     .sort((a, b) => isoDeBr(b.data).localeCompare(isoDeBr(a.data)) ||
       ordemRota({ turno: turnoDaPd(a), nome: a.roteiro }, { turno: turnoDaPd(b), nome: b.roteiro }));
   const lista = document.getElementById("pdLista");
   lista.classList.toggle("parada", !!semAnim);
   if (!pdFiltradas.length) {
+    const soNaoUteis = !pd.itens.length && (pd.diasNaoUteis || []).length === diasEntre(isoDeBr(pd.de), isoDeBr(pd.ate)) + 1;
     lista.innerHTML = `<div class="vazio">${ic("checkCirc")}${pd.itens.length
       ? (pdFiltro === "abertas" ? "Nenhuma pendência em aberto com esse filtro." : "Nada com esse filtro.")
-      : "Nenhuma pendência no relatório deste período."}</div>`;
+      : soNaoUteis
+        ? "Este período não tem dia útil (sábado, domingo ou feriado)." +
+          (pd.ultimoDiaUtil ? `<br><br><button onclick="irParaDiaUtil()">Ver o último dia útil (${esc(pd.ultimoDiaUtil)})</button>` : "")
+        : "Nenhuma pendência no relatório deste período."}</div>`;
   } else {
     const porDia = {};
     pdFiltradas.forEach(p => { (porDia[p.data] = porDia[p.data] || []).push(p); });
@@ -3109,6 +3207,23 @@ function desenharPendencias(semAnim) {
   }
   document.getElementById("pdCsv").disabled = !pdFiltradas.length;
   document.getElementById("pdDica").classList.toggle("hidden", !pdFiltradas.some(p => !p.tratado));
+  atualizarSelecaoPd();
+}
+
+function irParaDiaUtil() {
+  const iso = isoDeBr(pd.ultimoDiaUtil);
+  if (!iso) return;
+  document.getElementById("pdDe").value = iso;
+  document.getElementById("pdAte").value = iso;
+  recarregarPeriodo("pd");
+}
+
+/* Master: marca todas as pendências em aberto que estão na tela (ou desmarca, se já estão todas) */
+function selecionarTodasPd() {
+  if (!ehMaster()) return;
+  const abertas = pdFiltradas.filter(p => !p.tratado);
+  const todas = abertas.length && abertas.every(p => pdSel.has(p.id));
+  abertas.forEach(p => todas ? pdSel.delete(p.id) : pdSel.add(p.id));
   atualizarSelecaoPd();
 }
 
@@ -3137,7 +3252,7 @@ function pendenciaHtml(p, i, semAnim) {
        onkeydown="if (event.key === ' ' || event.key === 'Enter') { event.preventDefault(); marcarPendencia('${p.id}'); }"`;
   const acoes = p.tratado ? `
       <div class="pd-acao">
-        <div class="pd-feito">${ic("checkCirc")}<div><b>TRATADO · ${esc(p.instrutor)}</b><small>por ${esc(p.tratadoPor) || "-"} em ${esc(p.tratadoEm) || "-"}</small></div></div>
+        <div class="pd-feito">${ic("checkCirc")}<div><b>TRATADO · ${esc(p.instrutor) || "sem instrutor"}</b><small>por ${esc(p.tratadoPor) || "-"} em ${esc(p.tratadoEm) || "-"}</small></div></div>
         ${pessoaDoCadastro(p.instrutor) ? `<button class="pd-desfazer" onclick="reenviarWhats('${p.id}')">Reenviar WhatsApp</button>` : ""}
         <button class="pd-desfazer" onclick="desfazerPendencia('${p.id}')">Desfazer</button>
       </div>` : "";
@@ -3166,7 +3281,7 @@ function marcarPendencia(id) {
   const p = pd && pd.itens.find(x => x.id === id);
   if (!p || p.tratado) return;
   if (pdSel.has(id)) pdSel.delete(id);
-  else if (pdSel.size >= PD_MAX_ENVIO) {
+  else if (pdSel.size >= pdLimiteSel()) {
     toast("Cada mensagem leva até " + PD_MAX_ENVIO + " pendências. Envie estas e depois marque as próximas.", "alert", true);
     return;
   } else pdSel.add(id);
@@ -3182,7 +3297,7 @@ function selecionarDiaPd(data) {
     let ficaram = 0;
     doDia.forEach(p => {
       if (pdSel.has(p.id)) return;
-      if (pdSel.size < PD_MAX_ENVIO) pdSel.add(p.id); else ficaram++;
+      if (pdSel.size < pdLimiteSel()) pdSel.add(p.id); else ficaram++;
     });
     if (ficaram) toast("Marcadas " + PD_MAX_ENVIO + " (o limite de uma mensagem). Depois de enviar, marque as outras " + ficaram + ".", "alert");
   }
@@ -3210,7 +3325,12 @@ function atualizarSelecaoPd() {
     el.classList.toggle("sel", sel);
     el.setAttribute("aria-checked", sel);
   });
-  document.getElementById("pdLista").classList.toggle("cheia", n >= PD_MAX_ENVIO);
+  document.getElementById("pdLista").classList.toggle("cheia", n >= pdLimiteSel());
+  const bTodas = document.getElementById("pdTodas");
+  if (bTodas) {
+    const abertas = pdFiltradas.filter(p => !p.tratado);
+    bTodas.textContent = abertas.length && abertas.every(p => pdSel.has(p.id)) ? "Desmarcar todas" : "Marcar todas da lista (" + abertas.length + ")";
+  }
   document.querySelectorAll("#pdLista .pd-dia-sel").forEach(b => {
     const doDia = pdFiltradas.filter(p => p.data === b.dataset.dia && !p.tratado);
     b.textContent = doDia.length && doDia.every(p => pdSel.has(p.id)) ? "Desmarcar do dia" : "Marcar do dia";
@@ -3232,14 +3352,17 @@ function atualizarSelecaoPd() {
   } else if (ins) {
     lim.textContent = primeiroNome(ins.nome) + " pode receber mais " + v.sobra + " (limite " + limitePd().porPessoa + " a cada " + limitePd().horas + "h)";
   } else {
-    lim.textContent = n >= PD_MAX_ENVIO ? "limite de " + PD_MAX_ENVIO + " por mensagem" : "até " + PD_MAX_ENVIO + " por mensagem";
+    lim.textContent = ehMaster() ? "master: sem limite para finalizar (WhatsApp até " + PD_MAX_ENVIO + ")"
+      : n >= PD_MAX_ENVIO ? "limite de " + PD_MAX_ENVIO + " por mensagem" : "até " + PD_MAX_ENVIO + " por mensagem";
   }
-  lim.classList.toggle("cheio", n >= PD_MAX_ENVIO || !!(ins && n > v.sobra));
+  lim.classList.toggle("cheio", (!ehMaster() && n >= PD_MAX_ENVIO) || !!(ins && n > v.sobra));
   const temCadastro = !!(pd.cadastro || []).length;
   document.getElementById("pdEnviar").innerHTML = ic("whats") + "Enviar WhatsApp" + (n > 1 ? " (" + n + ")" : "");
   document.getElementById("pdEnviar").classList.toggle("hidden", !temCadastro);
-  document.getElementById("pdSo").textContent = temCadastro ? "Só marcar TRATADO" : "Marcar TRATADO";
-  document.getElementById("pdSo").className = temCadastro ? "bl-sec" : "bl-ok";
+  const semPessoa = ehMaster() && (temCadastro ? !ins : String(pdPessoa).trim().length < 2);
+  document.getElementById("pdSo").textContent = semPessoa ? "Finalizar sem instrutor" + (n > 1 ? " (" + n + ")" : "")
+    : temCadastro ? "Só marcar TRATADO" : "Marcar TRATADO";
+  document.getElementById("pdSo").className = temCadastro && !semPessoa ? "bl-sec" : "bl-ok";
 }
 
 /* ---------- Limite por pessoa (LIMITE_POR_PESSOA a cada LIMITE_HORAS do Atendimento.gs) ---------- */
@@ -3276,7 +3399,7 @@ function desenharDestinoPd() {
   if (!cad.length) {
     if (!document.getElementById("pdNome")) {
       caixa.innerHTML = `<input id="pdNome" list="pdInstrutores" maxlength="80" placeholder="Nome do instrutor" aria-label="Instrutor que recebeu as pendências"
-        value="${esc(pdPessoa)}" oninput="pdPessoa = this.value; this.classList.remove('campo-erro')">`;
+        value="${esc(pdPessoa)}" oninput="pdPessoa = this.value; this.classList.remove('campo-erro'); atualizarSelecaoPd()">`;
     }
     return;
   }
@@ -3356,55 +3479,56 @@ function irParaWhats(janela, url) {
   }
 }
 
-/* Botões da barra: confere o limite, grava TRATADO em todas e abre o WhatsApp com as que foram gravadas */
+/* Botões da barra: confere o limite, grava TRATADO em todas e abre o WhatsApp com as que foram gravadas.
+   Master: "Finalizar sem instrutor" grava sem escolher ninguém e sem o limite de 10 (manda em partes de 50). */
 function enviarSelecaoPd(comWhats) {
   const lista = selecionadasPd();
   if (!lista.length) return;
+  const master = ehMaster();
   const cad = pd.cadastro || [];
   let ins = null, nome;
   if (cad.length) {
-    ins = cad[pdPessoa];
-    if (!ins) {
+    ins = cad[pdPessoa] || null;
+    if (!ins && !(master && !comWhats)) {
       const sel = document.getElementById("pdPessoa");
       sel.classList.add("campo-erro");
       sel.focus();
       toast("Escolha o instrutor ou orientador que vai receber.", "alert", true);
       return;
     }
-    nome = ins.nome;
-    const aviso = avisoLimite(ins, lista.length);
-    if (aviso) { toast(aviso, "alert", true); return; }
-    if (comWhats && !linkWhats(ins.telefone)) { urlWhats(ins, lista); return; }
+    nome = ins ? ins.nome : "";
   } else {
     nome = String(pdPessoa).trim();
-    if (nome.length < 2) {
+    if (nome.length < 2 && !(master && !comWhats)) {
       const campo = document.getElementById("pdNome");
       campo.classList.add("campo-erro");
       campo.focus();
       toast("Digite o nome do instrutor antes de marcar como TRATADO.", "alert", true);
       return;
     }
+    if (nome.length < 2) nome = "";
+  }
+  if (comWhats && lista.length > PD_MAX_ENVIO) {
+    toast("O WhatsApp leva até " + PD_MAX_ENVIO + " pendências por mensagem. Desmarque algumas" + (master ? " ou use Finalizar sem instrutor." : "."), "alert", true);
+    return;
+  }
+  // o limite por pessoa (a cada 4 horas) só vale quando vai para alguém pelo WhatsApp, ou para quem não é master
+  if (ins && (comWhats || !master)) {
+    const aviso = avisoLimite(ins, lista.length);
+    if (aviso) { toast(aviso, "alert", true); return; }
+    if (comWhats && !linkWhats(ins.telefone)) { urlWhats(ins, lista); return; }
   }
   const janela = comWhats ? abrirJanelaWhats() : null;
   const fecharJanela = () => { if (janela && !janela.closed) janela.close(); };
   const botoes = ["pdEnviar", "pdSo"].map(b => document.getElementById(b));
   botoes.forEach(b => { b.disabled = true; });
 
-  chamarApi({
-    acao: "tratarPendencias", instrutor: nome, operador, via: comWhats ? "WhatsApp" : "",
-    itens: lista.map(p => ({ id: p.id, data: p.data, roteiro: p.roteiro }))
-  })
-    .then(r => {
-      if (r.senha === false) { fecharJanela(); sair(); return; }
-      if (!r.ok) {
-        if (r.limite) carregarPendencias(false, true); // outro operador enviou nesse meio tempo: atualiza as vagas
-        throw new Error(r.erro === "Ação desconhecida."
-          ? "O Apps Script publicado ainda é o anterior. Faça Implantar > Gerenciar implantações > Editar > Versão: Nova versão."
-          : r.erro || "Não foi possível gravar.");
-      }
+  gravarPendenciasEmPartes(lista, nome, comWhats ? "WhatsApp" : "", master ? PD_PARTE_MASTER : PD_MAX_ENVIO)
+    .then(res => {
+      if (!res) { fecharJanela(); sair(); return; }
       const gravadas = [], outros = [];
-      r.itens.forEach((x, k) => {
-        const p = lista[k];
+      res.itens.forEach((x, k) => {
+        const p = res.lista[k];
         pdSel.delete(p.id);
         if (x.ok || x.jaTratado) {
           Object.assign(p, { id: x.id, instrutor: x.instrutor || p.instrutor, tratado: true, tratadoPor: x.tratadoPor, tratadoEm: x.tratadoEm });
@@ -3412,7 +3536,7 @@ function enviarSelecaoPd(comWhats) {
         if (x.ok) gravadas.push(p);
         else outros.push(p.roteiro + (x.jaTratado ? " (já tratada por " + (x.tratadoPor || "outra pessoa") + ")" : ""));
       });
-      if (ins) gravadas.forEach(() => (ins.liberam = ins.liberam || []).push(Date.now() + limitePd().horas * 36e5));
+      if (ins && (comWhats || !master)) gravadas.forEach(() => (ins.liberam = ins.liberam || []).push(Date.now() + limitePd().horas * 36e5));
       if (comWhats && gravadas.length) irParaWhats(janela, urlWhats(ins, gravadas));
       else fecharJanela();
       if (nome && pd.instrutores.indexOf(nome) === -1) {
@@ -3424,11 +3548,39 @@ function enviarSelecaoPd(comWhats) {
       const ok = gravadas.length;
       if (ok) toast(comWhats
         ? (ok === 1 ? "1 pendência enviada" : ok + " pendências enviadas") + " para " + nome
-        : (ok === 1 ? "1 pendência marcada" : ok + " pendências marcadas") + " como TRATADO (" + nome + ")", "check");
+        : (ok === 1 ? "1 pendência marcada" : ok + " pendências marcadas") + " como TRATADO (" + (nome || "sem instrutor") + ")", "check");
       if (outros.length) toast("Não marcadas: " + outros.join("; "), "alert", true);
+      if (res.erro) toast(res.erro + (ok ? " As " + ok + " anteriores ficaram gravadas." : ""), "alert", true);
     })
     .catch(err => { fecharJanela(); toast(err.message, "alert", true); })
     .finally(() => botoes.forEach(b => { b.disabled = false; }));
+}
+
+/* Manda as pendências em partes e junta as respostas. Devolve null se a senha caiu.
+   Se uma parte der erro depois de outras gravadas, devolve o que já foi gravado e o erro em res.erro. */
+async function gravarPendenciasEmPartes(lista, nome, via, parte) {
+  const res = { itens: [], lista: [], erro: "" };
+  for (let i = 0; i < lista.length; i += parte) {
+    const pedaco = lista.slice(i, i + parte);
+    if (lista.length > parte) document.getElementById("pdSo").textContent = "Gravando " + Math.min(i + parte, lista.length) + " de " + lista.length + "...";
+    const r = await chamarApi({
+      acao: "tratarPendencias", instrutor: nome, operador, via: via,
+      itens: pedaco.map(p => ({ id: p.id, data: p.data, roteiro: p.roteiro }))
+    });
+    if (r.senha === false) return null;
+    if (!r.ok) {
+      if (r.limite) carregarPendencias(false, true); // outro operador enviou nesse meio tempo: atualiza as vagas
+      const msg = r.erro === "Ação desconhecida."
+        ? "O Apps Script publicado ainda é o anterior. Faça Implantar > Gerenciar implantações > Editar > Versão: Nova versão."
+        : r.erro || "Não foi possível gravar.";
+      if (!res.itens.length) throw new Error(msg);
+      res.erro = msg;
+      return res;
+    }
+    res.itens = res.itens.concat(r.itens);
+    res.lista = res.lista.concat(pedaco);
+  }
+  return res;
 }
 
 /* Abre de novo a mensagem de uma pendência já tratada (para o mesmo instrutor; não conta no limite) */
@@ -3480,6 +3632,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (s && document.getElementById("lNome").value) {
       senha = s;
       operador = document.getElementById("lNome").value;
+      perfil = sessionStorage.getItem("equipeBydPerfil") || "equipe"; // o painel confirma com o Apps Script
       abrirPainel();
     }
   } catch (e) {}
