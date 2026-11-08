@@ -1562,6 +1562,38 @@ body.pdsel .toasts { bottom: 90px; }
 
 .toast .ic { color: #4ade80; }
 
+/* ATUALIZAR PORTAL */
+body.perfil-byd .vistas button[data-vista="portal"] { display: none !important; }
+.ap-grade { display: grid; grid-template-columns: minmax(0, 2fr) minmax(260px, 1fr); gap: 14px; align-items: start; }
+@media (max-width: 860px) { .ap-grade { grid-template-columns: 1fr; } }
+.ap-corpo { padding: 14px; }
+.ap-sub { margin: 0 0 8px; font-size: 13px; color: var(--suave); line-height: 1.45; }
+.ap-sub b { color: var(--texto); }
+.ap-colunas { display: flex; flex-wrap: wrap; gap: 6px; margin: 4px 0 10px; }
+.ap-colunas span { font-size: 12px; font-weight: bold; background: var(--cinza); color: var(--azul); border-radius: 8px; padding: 4px 8px; }
+.ap-colunas span.opc { background: #fff; border: 1px dashed #cbd5e1; color: var(--suave); font-weight: normal; }
+.ap-drop {
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px;
+  border: 2px dashed #cbd5e1; border-radius: 14px; padding: 26px 16px; text-align: center;
+  cursor: pointer; color: var(--azul); background: #f8fafc; transition: border-color .15s, background .15s;
+}
+.ap-drop .ic { width: 30px; height: 30px; }
+.ap-drop strong { font-size: 15px; word-break: break-all; }
+.ap-drop small { color: var(--suave); font-size: 12px; }
+.ap-drop:hover, .ap-drop.arrastando { border-color: var(--azul-claro); background: #eff6ff; }
+.ap-drop.com-arquivo { border-style: solid; border-color: #bfdbfe; background: #eff6ff; }
+.ap-previa { display: flex; align-items: center; gap: 8px; font-size: 14px; margin-top: 10px; color: var(--suave); }
+.ap-previa.ok { color: var(--texto); }
+.ap-previa.ok > .ic { color: var(--verde); }
+.ap-alerta { color: #b45309; }
+.ap-btn { width: 100%; margin-top: 12px; padding: 13px; font-weight: bold; background: var(--verde); }
+.ap-sucesso { display: flex; gap: 10px; align-items: flex-start; background: #f0fdf4; border: 1px solid #bbf7d0; color: #14532d; border-radius: 12px; padding: 12px; margin: 14px 0 12px; font-size: 14px; }
+.ap-sucesso .ic { color: var(--verde); width: 22px; height: 22px; }
+.ap-sucesso b { display: block; }
+.ap-kpis { grid-template-columns: repeat(2, 1fr); }
+.ap-quando { font-size: 22px; font-weight: bold; color: var(--azul); }
+.ap-ha { font-size: 13px; color: var(--suave); margin: 2px 0 10px; }
+
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation: none !important; transition: none !important; }
   .check-anim circle, .check-anim path { stroke-dashoffset: 0; }
@@ -1608,6 +1640,7 @@ body.pdsel .toasts { bottom: 90px; }
     <button class="ativo" data-vista="chamados" onclick="mostrarVista('chamados')"><i data-ic="inbox"></i>Chamados <span class="badge-vista" id="badgeChamados"></span></button>
     <button data-vista="horarios" onclick="mostrarVista('horarios')"><i data-ic="bus"></i>Horários<span class="so-largo">dos roteiros</span></button>
     <button data-vista="pendencias" onclick="mostrarVista('pendencias')"><i data-ic="alert"></i>Pendências <span class="badge-vista" id="badgePendencias"></span></button>
+    <button data-vista="portal" onclick="mostrarVista('portal')"><i data-ic="upload"></i>Atualizar portal</button>
   </div>
 
   <div id="vistaChamados">
@@ -1709,6 +1742,41 @@ body.pdsel .toasts { bottom: 90px; }
       (roteiros sem chegada e/ou sem encerramento no dia anterior). Só entram dias úteis: sábados, domingos e feriados ficam de fora.
       O TRATADO e o instrutor ficam gravados no próprio relatório.</span></p>
   </div>
+
+  <!-- ATUALIZAR PORTAL (aba NOME_ABA da planilha do portal de embarque) -->
+  <div id="vistaPortal" class="hidden">
+    <div class="ap-grade">
+      <section class="lista-painel">
+        <div class="lista-topo">
+          <h3><i data-ic="upload"></i>Atualizar portal de embarque</h3>
+          <p class="ap-sub">Envie o arquivo de passageiros exportado do sistema (.xls ou .xlsx). O painel coloca os e-mails do banco,
+            monta o link do Google Maps pela coordenada e <b>substitui toda a lista</b> que os passageiros consultam no portal.</p>
+          <p class="ap-sub" style="margin-bottom:2px"><b>Colunas obrigatórias no arquivo:</b></p>
+          <div class="ap-colunas">
+            <span>Nome Passageiro</span><span>Linha Vinculada</span><span>Ponto de Referencia</span>
+            <span>Hora Parada</span><span>Coord. Parada</span><span>Endereço Parada</span>
+            <span class="opc">E-mail (opcional)</span><span class="opc">Obs. 1 – telefone (opcional)</span>
+          </div>
+        </div>
+        <div class="ap-corpo">
+          <label class="ap-drop" id="apDrop" for="apArquivo" ondragover="apArrastar(event, true)" ondragleave="apArrastar(event, false)" ondrop="apSoltar(event)">
+            <i data-ic="upload"></i><strong id="apDropTxt">Escolher arquivo</strong><small>ou arraste o arquivo para cá</small>
+          </label>
+          <input type="file" id="apArquivo" class="hidden" accept=".xls,.xlsx,.csv" onchange="apEscolheu(this.files[0])">
+          <div id="apPrevia"></div>
+          <button class="ap-btn" id="apBtn" onclick="apAtualizar()" disabled><i data-ic="refresh"></i><span>Atualizar</span></button>
+          <div id="apResultado"></div>
+        </div>
+      </section>
+      <aside class="lista-painel">
+        <div class="lista-topo"><h3><i data-ic="history"></i>Última atualização</h3></div>
+        <div class="ap-corpo" id="apUltima"><div class="esqueleto"></div></div>
+      </aside>
+    </div>
+    <p class="hz-nota"><i data-ic="alert"></i><span>Os e-mails vêm da aba <b>Base E-mails</b> da planilha de atendimento: primeiro pelo nome
+      (sem diferença de acento e maiúscula), depois pelo telefone da Obs. 1, só quando o nome também é parecido. Quem já tem e-mail no arquivo fica com ele.
+      A lista anterior do portal fica guardada na aba NOME_ABA_anterior.</span></p>
+  </div>
 </main>
 
 <div class="barra-lote hidden" id="barraLote">
@@ -1804,7 +1872,8 @@ const ICONES = {
   hash: '<path d="M4 9h16M4 15h16M10 3 8 21M16 3l-2 18"/>',
   text: '<path d="M4 6h16M4 12h16M4 18h10"/>',
   send: '<path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/>',
-  link: '<path d="M10 13a5 5 0 0 0 7.5.5l3-3a5 5 0 0 0-7-7l-1.7 1.7"/><path d="M14 11a5 5 0 0 0-7.5-.5l-3 3a5 5 0 0 0 7 7l1.7-1.7"/>'
+  link: '<path d="M10 13a5 5 0 0 0 7.5.5l3-3a5 5 0 0 0-7-7l-1.7 1.7"/><path d="M14 11a5 5 0 0 0-7.5-.5l-3 3a5 5 0 0 0 7 7l1.7-1.7"/>',
+  upload: '<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m17 8-5-5-5 5"/><path d="M12 3v12"/>'
 };
 
 function ic(nome) {
@@ -1944,7 +2013,7 @@ function abrirPainel() {
   aplicarPerfil();
   mostrarEsqueleto();
   carregar(false);
-  if (!ehByd() && (location.hash === "#horarios" || location.hash === "#pendencias")) mostrarVista(location.hash.slice(1));
+  if (!ehByd() && ["#horarios", "#pendencias", "#portal"].indexOf(location.hash) > -1) mostrarVista(location.hash.slice(1));
   else mostrarVista("chamados");
   clearInterval(timer);
   timer = setInterval(() => {
@@ -2656,7 +2725,7 @@ function mostrarSucessoGaveta(c, quando) {
 
 /* ================= ABAS ================= */
 let vista = "chamados";
-const VISTAS = { chamados: "vistaChamados", horarios: "vistaHorarios", pendencias: "vistaPendencias" };
+const VISTAS = { chamados: "vistaChamados", horarios: "vistaHorarios", pendencias: "vistaPendencias", portal: "vistaPortal" };
 
 function mostrarVista(v) {
   if (ehByd()) v = "chamados"; // BYD só vê a aba Chamados
@@ -2668,6 +2737,7 @@ function mostrarVista(v) {
   try { history.replaceState(null, "", v === "chamados" ? location.pathname + location.search : "#" + v); } catch (e) {}
   if (v === "horarios" && !hz) definirPeriodo("hz", 0, 0);
   if (v === "pendencias" && !pd) { const n = -diasAteDiaUtil(); definirPeriodo("pd", n, n); }
+  if (v === "portal") carregarStatusPortal();
 }
 
 /* Quantos dias voltar até o último dia de semana (seg a sex). Feriado o Apps Script avisa e sugere o dia útil. */
@@ -2681,6 +2751,7 @@ function atualizar() {
   if (ehByd()) carregar(true);
   else if (vista === "horarios") carregarHorarios(true);
   else if (vista === "pendencias") carregarPendencias(true);
+  else if (vista === "portal") carregarStatusPortal(true);
   else carregar(true);
 }
 
@@ -3679,6 +3750,240 @@ function baixarPendencias() {
   baixarCsv("pendencias-roteiros_" + nomePeriodo(pd.de, pd.ate) + ".csv",
     ["Data", "Turno", "Roteiro", "Falta", "Instrutor", "Status", "Tratado por", "Tratado em"],
     pdFiltradas.map(p => [p.data, p.turno, p.roteiro, PD_FALTA[faltaDe(p)].rotulo, p.instrutor, p.tratado ? "TRATADO" : "", p.tratadoPor, p.tratadoEm]));
+}
+
+/* ================= ATUALIZAR PORTAL DE EMBARQUE =================
+   O operador envia o arquivo exportado do sistema (.xls que na verdade é uma página HTML, .xls antigo ou .xlsx).
+   O painel lê as colunas pelo nome e manda as linhas para o Atendimento.gs, que coloca os e-mails do banco,
+   monta o link do Google Maps, deixa no formato do portal e substitui a aba NOME_ABA da planilha do portal. */
+const AP_XLSX_URL = "https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js";
+const AP_COLUNAS = {
+  nome:       { titulo: "Nome Passageiro",     nomes: ["nome passageiro"], obrigatoria: true },
+  linha:      { titulo: "Linha Vinculada",     nomes: ["linha vinculada"], obrigatoria: true },
+  referencia: { titulo: "Ponto de Referencia", nomes: ["ponto de referencia"], obrigatoria: true },
+  hora:       { titulo: "Hora Parada",         nomes: ["hora parada"], obrigatoria: true },
+  coord:      { titulo: "Coord. Parada",       nomes: ["coord parada", "coordenada parada", "coordenadas parada"], obrigatoria: true },
+  endereco:   { titulo: "Endereço Parada",     nomes: ["endereco parada"], obrigatoria: true },
+  email:      { titulo: "E-mail",              nomes: ["e mail", "email"], obrigatoria: false },
+  telefone:   { titulo: "Obs. 1",              nomes: ["obs 1", "telefone", "celular"], obrigatoria: false }
+};
+
+let apLido = null;          // { arquivo, linhas, faltando, comEmail, semCoord }
+let apEnviando = false;
+
+function apChave(t) {
+  return normalizar(t).replace(/[^a-z0-9]+/g, " ").trim();
+}
+
+/* O leitor de .xlsx só é baixado quando precisa (o .xls exportado do sistema não precisa dele) */
+function apCarregarXlsx() {
+  if (window.XLSX) return Promise.resolve();
+  return new Promise((ok, falhou) => {
+    const s = document.createElement("script");
+    s.src = AP_XLSX_URL;
+    s.onload = () => ok();
+    s.onerror = () => falhou(new Error("Não foi possível carregar o leitor de planilhas. Confira a internet e tente de novo."));
+    document.head.appendChild(s);
+  });
+}
+
+/* Devolve o arquivo como uma matriz de textos (linhas x colunas) */
+async function apMatriz(file) {
+  const buf = await file.arrayBuffer();
+  const b = new Uint8Array(buf.slice(0, 8));
+  const zip = b[0] === 0x50 && b[1] === 0x4b;   // .xlsx
+  const ole = b[0] === 0xd0 && b[1] === 0xcf;   // .xls antigo do Excel
+  if (!zip && !ole) {
+    const texto = new TextDecoder("utf-8").decode(buf);
+    if (/<table/i.test(texto)) {
+      const tabela = new DOMParser().parseFromString(texto, "text/html").querySelector("table");
+      return [...tabela.rows].map(tr => [...tr.cells].map(td => td.textContent.replace(/ /g, " ").trim()));
+    }
+    if (!/[;,\t]/.test(texto.split(/\r?\n/)[0] || "")) throw new Error("Formato não reconhecido. Envie o .xls ou .xlsx exportado do sistema.");
+    await apCarregarXlsx();
+    const wb = XLSX.read(texto, { type: "string" });
+    return XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], { header: 1, raw: false, defval: "" });
+  }
+  await apCarregarXlsx();
+  const wb = XLSX.read(buf, { type: "array" });
+  for (const nome of wb.SheetNames) {
+    const m = XLSX.utils.sheet_to_json(wb.Sheets[nome], { header: 1, raw: false, defval: "" });
+    if (m.some(l => l.some(c => apChave(c) === "nome passageiro"))) return m;
+  }
+  return XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], { header: 1, raw: false, defval: "" });
+}
+
+async function apLerArquivo(file) {
+  const m = await apMatriz(file);
+  const iCab = m.findIndex(l => l.some(c => apChave(c) === "nome passageiro"));
+  const obrigatorias = Object.keys(AP_COLUNAS).filter(k => AP_COLUNAS[k].obrigatoria);
+  if (iCab === -1) return { arquivo: file.name, linhas: [], faltando: obrigatorias.map(k => AP_COLUNAS[k].titulo) };
+  const cab = m[iCab].map(apChave);
+  const idx = {};
+  Object.keys(AP_COLUNAS).forEach(k => {
+    idx[k] = -1;
+    for (const n of AP_COLUNAS[k].nomes) { const i = cab.indexOf(n); if (i > -1) { idx[k] = i; break; } }
+  });
+  const faltando = obrigatorias.filter(k => idx[k] === -1).map(k => AP_COLUNAS[k].titulo);
+  const linhas = [];
+  m.slice(iCab + 1).forEach(l => {
+    const v = k => (idx[k] > -1 && l[idx[k]] != null ? String(l[idx[k]]).trim() : "");
+    if (!v("nome")) return;
+    linhas.push({ nome: v("nome"), linha: v("linha"), referencia: v("referencia"), hora: v("hora"),
+      coord: v("coord"), endereco: v("endereco"), email: v("email"), telefone: v("telefone") });
+  });
+  return {
+    arquivo: file.name, linhas, faltando,
+    comEmail: linhas.filter(l => l.email).length,
+    semCoord: linhas.filter(l => !/^-?\d+(\.\d+)?,\s*-?\d+(\.\d+)?$/.test(l.coord)).length
+  };
+}
+
+/* ---------- Tela ---------- */
+async function apEscolheu(file) {
+  if (!file || apEnviando) return;
+  apLido = null;
+  const previa = document.getElementById("apPrevia");
+  const btn = document.getElementById("apBtn");
+  document.getElementById("apResultado").innerHTML = "";
+  document.getElementById("apDropTxt").textContent = file.name;
+  document.getElementById("apDrop").classList.add("com-arquivo");
+  btn.disabled = true;
+  previa.innerHTML = `<div class="ap-previa">${ic("refresh")}<span>Lendo o arquivo...</span></div>`;
+  try {
+    const r = await apLerArquivo(file);
+    if (r.faltando.length) {
+      previa.innerHTML = `<div class="msg-erro">O arquivo não tem ${r.faltando.length === 1 ? "a coluna obrigatória" : "as colunas obrigatórias"}:
+        <b>${r.faltando.map(esc).join(", ")}</b>. Confira se é o arquivo exportado de Passageiros.</div>`;
+      return;
+    }
+    if (!r.linhas.length) {
+      previa.innerHTML = `<div class="msg-erro">O arquivo não tem nenhum passageiro.</div>`;
+      return;
+    }
+    apLido = r;
+    previa.innerHTML = `
+      <div class="ap-previa ok">${ic("checkCirc")}<span><b>${r.linhas.length} passageiros</b> prontos para enviar
+        · ${r.comEmail} já com e-mail${r.semCoord ? ` · <span class="ap-alerta">${r.semCoord} sem coordenada (ficam sem link do Maps)</span>` : ""}</span></div>`;
+    btn.disabled = false;
+  } catch (err) {
+    previa.innerHTML = `<div class="msg-erro">${esc(err.message)}</div>`;
+  }
+}
+
+function apLimparArquivo() {
+  apLido = null;
+  document.getElementById("apArquivo").value = "";
+  document.getElementById("apDropTxt").textContent = "Escolher arquivo";
+  document.getElementById("apDrop").classList.remove("com-arquivo");
+  document.getElementById("apPrevia").innerHTML = "";
+  document.getElementById("apBtn").disabled = true;
+}
+
+async function apAtualizar(forcar) {
+  if (!apLido || apEnviando || ehByd()) return;
+  const n = apLido.linhas.length;
+  if (!forcar && !confirm("Substituir toda a lista do portal pelos " + n + " passageiros de \"" + apLido.arquivo + "\"?\n\n" +
+      "A lista que está no portal agora fica guardada na aba NOME_ABA_anterior.")) return;
+  const btn = document.getElementById("apBtn");
+  const txt = btn.querySelector("span");
+  apEnviando = true;
+  btn.disabled = true;
+  txt.textContent = "Atualizando o portal...";
+  document.getElementById("apResultado").innerHTML = "";
+  try {
+    const r = await chamarApi({ acao: "atualizarPortal", arquivo: apLido.arquivo, operador, forcar: !!forcar, linhas: apLido.linhas });
+    if (r.senha === false) { sair(); return; }
+    if (r.confirmar) {
+      apEnviando = false;
+      if (confirm(r.erro + "\n\nOK = substituir mesmo assim")) return apAtualizar(true);
+      return;
+    }
+    if (!r.ok) throw new Error(r.erro === "Ação desconhecida."
+      ? "O Apps Script publicado ainda não tem a atualização do portal. Faça Implantar > Gerenciar implantações > Editar > Versão: Nova versão."
+      : r.erro || "Não foi possível atualizar o portal.");
+    apMostrarResultado(r);
+    apMostrarUltima(r.ultima);
+    apLimparArquivo();
+    toast("Portal atualizado com " + r.resumo.total + " passageiros", "check");
+  } catch (err) {
+    document.getElementById("apResultado").innerHTML = `<div class="msg-erro">${esc(err.message)}</div>`;
+    toast(err.message, "alert", true);
+  } finally {
+    apEnviando = false;
+    txt.textContent = "Atualizar";
+    btn.disabled = !apLido;
+  }
+}
+
+function apMostrarResultado(r) {
+  const s = r.resumo;
+  const nums = [
+    { n: s.total, rotulo: "Passageiros no portal", cor: "#0d2f52", fundo: "#eff6ff", icone: "user" },
+    { n: s.preenchidos, rotulo: "E-mails preenchidos pelo banco", cor: "#15803d", fundo: "#f0fdf4", icone: "checkCirc" },
+    { n: s.jaTinham, rotulo: "Já vieram com e-mail", cor: "#1d4ed8", fundo: "#dbeafe", icone: "inbox" },
+    { n: s.semEmail, rotulo: "Sem e-mail", cor: "#b45309", fundo: "#fffbeb", icone: "alert" }
+  ];
+  const lista = (titulo, itens, dica) => itens.length ? `
+    <div class="secao"><h4>${titulo} (${itens.length})</h4>
+      <div class="lote-lista">${itens.slice(0, 30).map(x => `<div><span>${esc(x.arquivo)}</span><small>${esc(x.base)}</small></div>`).join("")}
+        ${itens.length > 30 ? `<div class="mais">e mais ${itens.length - 30}</div>` : ""}</div>
+      <p class="ap-sub">${dica}</p></div>` : "";
+  document.getElementById("apResultado").innerHTML = `
+    <div class="ap-sucesso">${ic("checkCirc")}<div><b>Portal atualizado!</b><span>Os passageiros já encontram o roteiro novo no site.
+      ${s.semMaps ? ` ${s.semMaps} ${s.semMaps === 1 ? "passageiro ficou" : "passageiros ficaram"} sem link do Maps (sem coordenada no arquivo).` : ""}</span></div></div>
+    <div class="kpis ap-kpis">${nums.map(k => `
+      <div class="kpi" style="--cor:${k.cor};--fundo-kpi:${k.fundo}">
+        <div class="kpi-ic">${ic(k.icone)}</div><div><strong>${k.n}</strong><span>${k.rotulo}</span></div>
+      </div>`).join("")}</div>
+    ${lista("Achados pelo telefone", r.porTelefone || [], "O nome no arquivo está diferente do banco, mas o telefone e o nome batem. Vale conferir.")}
+    ${lista("Mesmo telefone, nome diferente", r.ignorados || [], "O telefone do arquivo está no banco com outro nome, então ficaram sem e-mail por segurança. Se for a mesma pessoa, corrija o nome no cadastro.")}`;
+}
+
+function apMostrarUltima(u) {
+  const box = document.getElementById("apUltima");
+  if (!u) {
+    box.innerHTML = `<div class="vazio">${ic("history")}Nenhuma atualização feita pelo painel ainda.</div>`;
+    return;
+  }
+  box.innerHTML = `
+    <div class="ap-quando">${esc(u.quandoTxt)}</div>
+    <div class="ap-ha">${u.quando ? esc(tempoRelativo(u.quando)) : ""}</div>
+    <div class="dado">${ic("user")}<div><b>Atualizado por</b>${esc(u.operador) || "-"}</div></div>
+    <div class="dado">${ic("text")}<div><b>Arquivo</b>${esc(u.arquivo) || "-"}</div></div>
+    <div class="dado">${ic("bus")}<div><b>Passageiros</b>${esc(u.passageiros)} · ${esc(Number(u.jaTinham || 0) + Number(u.preenchidos || 0))} com e-mail</div></div>`;
+}
+
+function carregarStatusPortal(manual) {
+  if (ehByd()) return;
+  const btn = document.getElementById("btnAtualizar");
+  btn.classList.add("girando");
+  return chamarApi({ acao: "statusPortal" })
+    .then(r => {
+      if (r.senha === false) { sair(); return; }
+      if (!r.ok) throw new Error(r.erro === "Ação desconhecida."
+        ? "O Apps Script publicado ainda não tem a atualização do portal. Faça Implantar > Gerenciar implantações > Editar > Versão: Nova versão."
+        : r.erro || "Não foi possível ler a última atualização.");
+      apMostrarUltima(r.ultima);
+      if (manual) toast("Última atualização carregada", "check");
+    })
+    .catch(err => {
+      document.getElementById("apUltima").innerHTML = `<div class="msg-erro">${esc(err.message)}</div>`;
+    })
+    .finally(() => btn.classList.remove("girando"));
+}
+
+/* arrastar e soltar o arquivo */
+function apArrastar(ev, dentro) {
+  ev.preventDefault();
+  document.getElementById("apDrop").classList.toggle("arrastando", dentro);
+}
+
+function apSoltar(ev) {
+  ev.preventDefault();
+  document.getElementById("apDrop").classList.remove("arrastando");
+  const f = ev.dataTransfer && ev.dataTransfer.files[0];
+  if (f) apEscolheu(f);
 }
 
 /* AVISOS */
