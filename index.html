@@ -1592,6 +1592,48 @@ body.perfil-byd .vistas button[data-vista="portal"] { display: none !important; 
 .ap-sucesso b { display: block; }
 .ap-kpis { grid-template-columns: repeat(2, 1fr); }
 .ap-quando { font-size: 22px; font-weight: bold; color: var(--azul); }
+
+/* SEPARAR CIDADE SOL x LITORAL NORTE */
+.sep-bloco { margin-top: 18px; }
+.sep-confirmar { margin-top: 14px; }
+.sep-caso {
+  display: flex; gap: 10px; align-items: flex-start; border: 1px solid var(--borda); border-radius: 12px;
+  padding: 10px 12px; margin-bottom: 8px; cursor: pointer; background: #fff;
+}
+.sep-caso.sel { background: #f0fdf4; border-color: #86efac; }
+.sep-caso input { width: 18px; height: 18px; margin-top: 2px; flex: 0 0 auto; accent-color: var(--verde); }
+.sep-caso-corpo { flex: 1; min-width: 0; }
+.sep-motivo { font-size: 12px; color: #b45309; font-weight: bold; margin-bottom: 6px; }
+.sep-motivo.ok { color: var(--verde); }
+.sep-par { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+@media (max-width: 640px) { .sep-par { grid-template-columns: 1fr; } }
+.sep-pessoa { background: var(--cinza); border-radius: 10px; padding: 8px 10px; font-size: 13px; min-width: 0; }
+.sep-pessoa small { display: block; font-size: 11px; color: var(--suave); }
+.sep-pessoa b { display: block; margin: 1px 0 3px; word-break: break-word; }
+.sep-pessoa span { display: flex; align-items: center; gap: 5px; color: var(--suave); font-size: 12px; word-break: break-all; }
+.sep-pessoa .ic { width: 13px; height: 13px; }
+.sep-downloads { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px; }
+@media (max-width: 640px) { .sep-downloads { grid-template-columns: 1fr; } }
+.sep-baixar {
+  display: flex; align-items: center; gap: 10px; text-decoration: none; color: var(--texto);
+  border: 1px solid var(--borda); border-left: 4px solid var(--cor); border-radius: 12px; padding: 12px; background: #fff;
+}
+.sep-baixar:hover { box-shadow: 0 8px 18px rgba(11,37,69,.10); }
+.sep-baixar .ic { color: var(--cor); width: 22px; height: 22px; }
+.sep-baixar b { display: block; font-size: 13px; word-break: break-word; }
+.sep-baixar small { color: var(--suave); font-size: 12px; }
+.modal-botoes { display: flex; gap: 8px; justify-content: flex-end; flex-wrap: wrap; margin-top: 12px; }
+.modal-botoes .btn-sec { background: var(--cinza); color: var(--texto); }
+.modal-botoes .btn-ok { background: var(--verde); font-weight: bold; }
+.modal {
+  position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%); z-index: 21;
+  width: min(440px, calc(100% - 32px)); background: #fff; border-radius: 18px; padding: 22px 20px 18px;
+  box-shadow: 0 20px 50px rgba(11,37,69,.3); animation: aparecer .2s;
+}
+.modal-ic { width: 46px; height: 46px; border-radius: 14px; background: #fffbeb; color: #b45309; display: flex; align-items: center; justify-content: center; margin-bottom: 10px; }
+.modal-ic .ic { width: 24px; height: 24px; }
+.modal h3 { margin: 0 0 8px; font-size: 18px; color: var(--azul); }
+.modal p { margin: 0; font-size: 14px; color: var(--suave); line-height: 1.45; }
 .ap-ha { font-size: 13px; color: var(--suave); margin: 2px 0 10px; }
 
 @media (prefers-reduced-motion: reduce) {
@@ -1776,6 +1818,28 @@ body.perfil-byd .vistas button[data-vista="portal"] { display: none !important; 
     <p class="hz-nota"><i data-ic="alert"></i><span>Os e-mails vêm da aba <b>Base E-mails</b> da planilha de atendimento: primeiro pelo nome
       (sem diferença de acento e maiúscula), depois pelo telefone da Obs. 1, só quando o nome também é parecido. Quem já tem e-mail no arquivo fica com ele.
       A lista anterior do portal fica guardada na aba NOME_ABA_anterior.</span></p>
+
+    <!-- SEPARAR FORMULÁRIO BYD: CIDADE SOL x LITORAL NORTE (lista de passageiros = aba NOME_ABA do portal) -->
+    <section class="lista-painel sep-bloco">
+      <div class="lista-topo">
+        <h3><i data-ic="checks"></i>Separar formulário BYD · Cidade Sol x Litoral Norte</h3>
+        <p class="ap-sub">Envie o formulário da BYD (.xlsx). Quem está na lista de passageiros do portal vai para <b>CIDADE SOL</b>; os demais, para <b>LITORAL NORTE</b>.
+          Os dois arquivos saem com a mesma formatação do original e com o nome já trocado ("… - CIDADE SOL.xlsx" e "… - LITORAL NORTE.xlsx").
+          Nomes parecidos são conferidos pelo telefone e pelo e-mail, e você confirma antes de gerar.</p>
+        <p class="ap-sub" style="margin-bottom:2px"><b>O formulário precisa ter, no cabeçalho (até a linha 6):</b></p>
+        <div class="ap-colunas"><span>Nome</span><span>TELEFONE</span><span class="opc">E-mail (opcional, ajuda a conferir)</span></div>
+      </div>
+      <div class="ap-corpo">
+        <label class="ap-drop" id="sepDrop" for="sepArquivo" ondragover="sepArrastar(event, true)" ondragleave="sepArrastar(event, false)" ondrop="sepSoltar(event)">
+          <i data-ic="upload"></i><strong id="sepDropTxt">Escolher formulário (.xlsx)</strong><small>ou arraste o arquivo para cá</small>
+        </label>
+        <input type="file" id="sepArquivo" class="hidden" accept=".xlsx" onchange="sepEscolheu(this.files[0])">
+        <div id="sepPrevia"></div>
+        <button class="ap-btn" id="sepBtn" onclick="sepClicouSeparar()" disabled><i data-ic="checks"></i><span>Separar</span></button>
+        <div id="sepCasos"></div>
+        <div id="sepResultado"></div>
+      </div>
+    </section>
   </div>
 </main>
 
@@ -3769,6 +3833,7 @@ const AP_COLUNAS = {
 };
 
 let apLido = null;          // { arquivo, linhas, faltando, comEmail, semCoord }
+let apUltimaDados = null;   // última atualização do portal (aparece no pop-up do Separar)
 let apEnviando = false;
 
 function apChave(t) {
@@ -3941,6 +4006,7 @@ function apMostrarResultado(r) {
 }
 
 function apMostrarUltima(u) {
+  apUltimaDados = u || null;
   const box = document.getElementById("apUltima");
   if (!u) {
     box.innerHTML = `<div class="vazio">${ic("history")}Nenhuma atualização feita pelo painel ainda.</div>`;
@@ -3984,6 +4050,648 @@ function apSoltar(ev) {
   document.getElementById("apDrop").classList.remove("arrastando");
   const f = ev.dataTransfer && ev.dataTransfer.files[0];
   if (f) apEscolheu(f);
+}
+
+/* ================= SEPARAR FORMULÁRIO BYD: CIDADE SOL x LITORAL NORTE =================
+   Mesma regra da skill "separar-cidade-sol-litoral-norte":
+   - CIDADE SOL: quem está na lista de passageiros (aba NOME_ABA do portal); LITORAL NORTE: os demais.
+   - Arquivos: "<nome do formulário> - CIDADE SOL.xlsx" e "<nome do formulário> - LITORAL NORTE.xlsx".
+   - Só apaga as linhas da outra lista: abas, cabeçalho, formatação, altura das linhas, links e listas de seleção ficam;
+     fórmulas das linhas de dados viram o valor exibido; a coluna de nº de série é renumerada de 1 até N.
+   O .xlsx é editado direto no XML (JSZip), sem regravar a planilha, para não perder formatação. */
+const SEP_JSZIP_URL = "https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js";
+const SEP_NS = "http://schemas.openxmlformats.org/spreadsheetml/2006/main";
+const SEP_NS_REL = "http://schemas.openxmlformats.org/officeDocument/2006/relationships";
+const SEP_NS_PKG = "http://schemas.openxmlformats.org/package/2006/relationships";
+
+let sepForm = null;       // formulário lido
+let sepAnalise = null;    // resultado do cruzamento (com os casos para confirmar)
+let sepUrls = [];         // links de download gerados
+
+function sepCarregarZip() {
+  if (window.JSZip) return Promise.resolve();
+  return new Promise((ok, falhou) => {
+    const s = document.createElement("script");
+    s.src = SEP_JSZIP_URL;
+    s.onload = () => ok();
+    s.onerror = () => falhou(new Error("Não foi possível carregar o leitor de .xlsx. Confira a internet e tente de novo."));
+    document.head.appendChild(s);
+  });
+}
+
+/* ---------- utilidades ---------- */
+function sepChave(t) {
+  return String(t == null ? "" : t).replace(/Ð/g, "D").replace(/ð/g, "d")
+    .normalize("NFD").replace(/[̀-ͯ]/g, "").toUpperCase().replace(/\s+/g, " ").trim();
+}
+/* tira sufixos como (T), (E), (2) e o que vier depois de uma barra */
+function sepLimpar(t) {
+  return String(t == null ? "" : t).replace(/[​-‏﻿]/g, "").replace(/\([^)]*\)|\[[^\]]*\]/g, " ")
+    .replace(/\s*\/.*$/, "").replace(/\s+/g, " ").trim();
+}
+function sepFone9(t) {
+  let s = String(t == null ? "" : t).trim().replace(/^(\+?\d[\d\-\s]*)\.0+$/, "$1");
+  const d = s.replace(/\D/g, "");
+  return d.length >= 8 ? d.slice(-9) : "";
+}
+/* e-mails de quem preencheu a lista (operadores), que não identificam o passageiro */
+const SEP_EMAILS_IGNORAR = ["lucas.filho@cidadesol.com.br", "cristiano.carneiro@cidadesol.com.br", "railan.jesus@cidadesol.com.br",
+  "emanuel.rodrigues@byd.com", "railanjesus451@gmail.com", "mateus.silva@grupobrasileiro.com.br"];
+function sepEmail(t) {
+  const m = String(t == null ? "" : t).toLowerCase().match(/[a-z0-9._%+\-]+@[a-z0-9.\-]+\.[a-z]{2,}/);
+  return m && SEP_EMAILS_IGNORAR.indexOf(m[0]) === -1 ? m[0] : "";
+}
+function sepSemelhanca(a, b) {
+  const n = a.length, m = b.length;
+  if (!n || !m) return 0;
+  let ant = [];
+  for (let j = 0; j <= m; j++) ant[j] = j;
+  for (let i = 1; i <= n; i++) {
+    const cur = [i];
+    for (let j = 1; j <= m; j++) cur[j] = Math.min(ant[j] + 1, cur[j - 1] + 1, ant[j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1));
+    ant = cur;
+  }
+  return 1 - ant[m] / Math.max(n, m);
+}
+const SEP_LIGACOES = { DE: 1, DA: 1, DO: 1, DOS: 1, DAS: 1, E: 1 };
+/* nome parecido: 85% igual (erro de digitação) ou o nome mais curto, com 2+ palavras, contido no mais longo */
+function sepParecido(a, b) {
+  if (!a || !b) return false;
+  // o primeiro nome tem que bater (aceita erro de digitação): RAILSON x ADAILSON não passa
+  if (sepSemelhanca(a.split(" ")[0], b.split(" ")[0]) < 0.8) return false;
+  if (sepSemelhanca(a, b) >= 0.85) return true;
+  const pa = a.split(" ").filter(w => !SEP_LIGACOES[w]);
+  const pb = b.split(" ").filter(w => !SEP_LIGACOES[w]);
+  const curto = pa.length <= pb.length ? pa : pb, longo = pa.length <= pb.length ? pb : pa;
+  if (curto.length < 2 || curto[0] !== longo[0]) return false;
+  return curto.every(w => longo.some(x => x === w || sepSemelhanca(w, x) >= 0.8));
+}
+function sepColNum(letras) {
+  let n = 0;
+  for (const ch of letras) n = n * 26 + (ch.charCodeAt(0) - 64);
+  return n;
+}
+function sepColLetra(n) {
+  let s = "";
+  while (n > 0) { const r = (n - 1) % 26; s = String.fromCharCode(65 + r) + s; n = Math.floor((n - 1) / 26); }
+  return s;
+}
+function sepRef(ref) {
+  const m = String(ref).match(/^\$?([A-Z]+)\$?(\d+)$/);
+  return m ? { col: sepColNum(m[1]), row: Number(m[2]) } : null;
+}
+function sepXml(txt) { return new DOMParser().parseFromString(txt, "application/xml"); }
+function sepTexto(doc) {
+  const s = new XMLSerializer().serializeToString(doc);
+  return /^<\?xml/.test(s) ? s : '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\r\n' + s;
+}
+function sepCaminho(base, alvo) {
+  if (alvo.charAt(0) === "/") return alvo.slice(1);
+  const partes = base.split("/").slice(0, -1);
+  alvo.split("/").forEach(p => { if (p === "..") partes.pop(); else if (p && p !== ".") partes.push(p); });
+  return partes.join("/");
+}
+function sepRels(zip, caminho) {
+  const relPath = caminho.replace(/([^/]+)$/, "_rels/$1.rels");
+  const f = zip.file(relPath);
+  return f ? f.async("string").then(t => ({ relPath, doc: sepXml(t) })) : Promise.resolve(null);
+}
+
+/* ---------- leitura do formulário ---------- */
+async function sepLerFormulario(file) {
+  await sepCarregarZip();
+  const buf = await file.arrayBuffer();
+  const zip = await JSZip.loadAsync(buf);
+  if (!zip.file("xl/workbook.xml")) throw new Error("O arquivo não é um .xlsx válido. Envie o formulário BYD em .xlsx.");
+
+  // textos compartilhados
+  const ss = [];
+  if (zip.file("xl/sharedStrings.xml")) {
+    const d = sepXml(await zip.file("xl/sharedStrings.xml").async("string"));
+    [...d.getElementsByTagName("si")].forEach(si => {
+      let t = "";
+      [...si.getElementsByTagName("t")].forEach(x => { if (!x.closest || !x.closest("rPh")) t += x.textContent; });
+      ss.push(t);
+    });
+  }
+  // abas e caminhos
+  const wb = sepXml(await zip.file("xl/workbook.xml").async("string"));
+  const wbRels = sepXml(await zip.file("xl/_rels/workbook.xml.rels").async("string"));
+  const alvoDe = {};
+  [...wbRels.getElementsByTagName("Relationship")].forEach(r => { alvoDe[r.getAttribute("Id")] = sepCaminho("xl/workbook.xml", r.getAttribute("Target")); });
+  const abas = [...wb.getElementsByTagName("sheet")].map((s, i) => ({
+    nome: s.getAttribute("name"), indice: i, caminho: alvoDe[s.getAttributeNS(SEP_NS_REL, "id") || s.getAttribute("r:id")]
+  })).filter(a => a.caminho && zip.file(a.caminho));
+
+  const valor = c => {
+    const t = c.getAttribute("t");
+    if (t === "inlineStr") return [...c.getElementsByTagName("t")].map(x => x.textContent).join("");
+    const v = c.getElementsByTagName("v")[0];
+    if (!v) return "";
+    return t === "s" ? (ss[Number(v.textContent)] || "") : v.textContent;
+  };
+
+  // escolhe a aba com cabeçalho "Nome" + "TELEFONE" (até a linha 6) e mais nomes preenchidos
+  let melhor = null;
+  for (const aba of abas) {
+    const txt = await zip.file(aba.caminho).async("string");
+    if (!/<row/.test(txt)) continue;
+    const doc = sepXml(txt);
+    const linhas = [...doc.getElementsByTagName("row")];
+    let ultimoNum = 0;
+    const porNum = linhas.map(r => { const n = Number(r.getAttribute("r")) || ultimoNum + 1; ultimoNum = n; return { n, el: r }; });
+    for (const { n, el } of porNum.filter(x => x.n <= 6)) {
+      const cel = {};
+      let ultimaCol = 0;
+      [...el.getElementsByTagName("c")].forEach(c => {
+        const ref = sepRef(c.getAttribute("r") || "");
+        const col = ref ? ref.col : ultimaCol + 1;
+        ultimaCol = col;
+        cel[col] = valor(c);
+      });
+      const cols = Object.keys(cel).map(Number).sort((a, b) => a - b);
+      const nc = cols.find(k => /(^|\n)\s*Nome/.test(cel[k]));
+      const pc = cols.find(k => /TELEFONE/i.test(cel[k]));
+      if (!nc || !pc) continue;
+      const ec = cols.find(k => /e-?mail|邮件|邮箱/i.test(cel[k]));
+      const sc = cols.find(k => /序号|n[uú]mero de s[eé]rie/i.test(cel[k]));
+      const dados = [];
+      porNum.filter(x => x.n > n).forEach(({ n: num, el: row }) => {
+        const v = {};
+        let uc = 0;
+        [...row.getElementsByTagName("c")].forEach(c => {
+          const ref = sepRef(c.getAttribute("r") || "");
+          const col = ref ? ref.col : uc + 1;
+          uc = col;
+          if (col === nc || col === pc || col === ec) v[col] = valor(c);
+        });
+        if (String(v[nc] || "").trim()) dados.push({ r: num, nome: String(v[nc]).trim(), tel: String(v[pc] || "").trim(), email: ec ? String(v[ec] || "").trim() : "" });
+      });
+      if (!melhor || dados.length > melhor.dados.length) {
+        melhor = { aba, cab: n, nc, pc, ec, sc, dados, titulos: { nome: cel[nc], tel: cel[pc] } };
+      }
+      break;
+    }
+  }
+  if (!melhor) throw new Error('Não achei, nas 6 primeiras linhas de nenhuma aba, um cabeçalho com "Nome" e "TELEFONE".');
+  if (!melhor.dados.length) throw new Error('A aba "' + melhor.aba.nome + '" não tem nenhum nome preenchido.');
+  return Object.assign(melhor, { buf, arquivo: file.name, base: file.name.replace(/\.xlsx$/i, "") });
+}
+
+/* ---------- cruzamento com a lista de passageiros ---------- */
+function sepClassificar(dados, passageiros) {
+  const lista = passageiros.map(p => {
+    const k = sepChave(sepLimpar(p.n));
+    const w = k.split(" ");
+    return { nome: String(p.n || "").trim(), tel: String(p.t || "").trim(), k, t9: sepFone9(p.t), email: sepEmail(p.e), prim: w[0], ult: w[w.length - 1] };
+  }).filter(p => p.k);
+  const porNome = new Set(lista.map(p => p.k));
+  const indice = campo => lista.reduce((m, p) => { if (p[campo]) (m[p[campo]] = m[p[campo]] || []).push(p); return m; }, {});
+  const porFone = indice("t9"), porEmail = indice("email"), porPrim = indice("prim"), porUlt = indice("ult");
+
+  const contagem = {};
+  dados.forEach(d => { const k = sepChave(sepLimpar(d.nome)); contagem[k] = (contagem[k] || 0) + 1; });
+
+  const auto = new Set();     // linhas que vão para CIDADE SOL sem perguntar (nome igual)
+  const casos = [];           // para o operador confirmar
+  const duplicados = [];
+  dados.forEach(d => {
+    const k = sepChave(sepLimpar(d.nome));
+    const t9 = sepFone9(d.tel), em = sepEmail(d.email);
+    if (contagem[k] > 1) duplicados.push(d);
+    if (porNome.has(k)) { auto.add(d.r); return; }
+
+    // 1) mesmo telefone ou mesmo e-mail com nome diferente
+    const porDado = [];
+    (porFone[t9] || []).forEach(p => porDado.push(p));
+    (porEmail[em] || []).forEach(p => { if (porDado.indexOf(p) === -1) porDado.push(p); });
+    if (porDado.length) {
+      const p = porDado.find(x => sepParecido(k, x.k)) || porDado[0];
+      const iguais = [];
+      if (t9 && p.t9 === t9) iguais.push("telefone");
+      if (em && p.email === em) iguais.push("e-mail");
+      const parecido = sepParecido(k, p.k);
+      casos.push({ r: d.r, form: d, lista: p, marcado: parecido,
+        motivo: (iguais.join(" e ") || "dado") + (iguais.length > 1 ? " iguais" : " igual") + (parecido ? ", nome parecido" : ", mas o nome é bem diferente") });
+      return;
+    }
+    // 2) nome parecido: confere pelo telefone e pelo e-mail
+    const vistos = new Set();
+    let melhor = null, nota = 0;
+    const w = k.split(" ");
+    (porPrim[w[0]] || []).concat(porUlt[w[w.length - 1]] || []).forEach(p => {
+      if (vistos.has(p)) return;
+      vistos.add(p);
+      const s = sepSemelhanca(k, p.k);
+      if (sepParecido(k, p.k) && s > nota) { melhor = p; nota = s; }
+    });
+    // telefone dos dois e diferente: só pergunta se o nome for quase igual (erro de digitação)
+    if (melhor && t9 && melhor.t9 && nota < 0.92) melhor = null;
+    if (melhor) {
+      const fone = !t9 || !melhor.t9 ? "sem telefone para comparar" : "telefone diferente";
+      const mail = !em || !melhor.email ? "sem e-mail para comparar" : "e-mail diferente";
+      casos.push({ r: d.r, form: d, lista: melhor, marcado: false, motivo: "Nome parecido; " + fone + "; " + mail });
+    }
+  });
+  return { auto, casos, duplicados, total: dados.length };
+}
+
+/* ---------- geração dos dois arquivos ---------- */
+async function sepGerarArquivo(form, manter) {
+  const zip = await JSZip.loadAsync(form.buf);
+  const caminho = form.aba.caminho;
+  const doc = sepXml(await zip.file(caminho).async("string"));
+  const PRIMEIRA = form.cab + 1;
+
+  // linhas: apaga as da outra lista e renumera as que ficam
+  const novo = {};
+  let ultimoNum = 0, seq = 0;
+  const linhas = [...doc.getElementsByTagName("row")].map(r => { const n = Number(r.getAttribute("r")) || ultimoNum + 1; ultimoNum = n; return { n, el: r }; });
+  linhas.forEach(({ n }) => { if (n >= PRIMEIRA && manter.has(n)) novo[n] = PRIMEIRA + seq++; });
+  const mapa = old => (old < PRIMEIRA ? old : (novo[old] || null));
+  const ordenados = Object.keys(novo).map(Number).sort((a, b) => a - b);
+  const tirar = el => el.parentNode && el.parentNode.removeChild(el);
+  const linhaEl = {};
+  linhas.forEach(({ n, el }) => { linhaEl[n] = el; });
+  const celulaEm = (row, col) => [...(linhaEl[row] ? linhaEl[row].getElementsByTagName("c") : [])]
+    .find(c => { const r = sepRef(c.getAttribute("r") || ""); return r && r.col === col; });
+
+  // áreas mescladas que passam pelas linhas de dados (ex.: caixa de observação ao lado da lista):
+  // passam a cobrir só as linhas que ficaram, e o texto vai para a primeira delas
+  [...doc.getElementsByTagName("mergeCell")].forEach(mc => {
+    const [a, b] = String(mc.getAttribute("ref")).split(":");
+    const ra = sepRef(a), rb = sepRef(b || a);
+    if (!ra || !rb) return;
+    if (rb.row < PRIMEIRA) return;
+    const dentro = ordenados.filter(o => o >= Math.max(ra.row, PRIMEIRA) && o <= rb.row);
+    const r1 = ra.row < PRIMEIRA ? ra.row : (dentro.length ? novo[dentro[0]] : null);
+    const r2 = dentro.length ? novo[dentro[dentro.length - 1]] : (ra.row < PRIMEIRA ? PRIMEIRA - 1 : null);
+    if (r1 === null || r2 === null || (r1 === r2 && ra.col === rb.col)) { tirar(mc); return; }
+    if (ra.row >= PRIMEIRA && dentro[0] !== ra.row) {
+      const origem = celulaEm(ra.row, ra.col), destinoRow = linhaEl[dentro[0]];
+      if (origem && destinoRow) {
+        const copia = origem.cloneNode(true);
+        copia.setAttribute("r", sepColLetra(ra.col) + dentro[0]);
+        const atual = celulaEm(dentro[0], ra.col);
+        if (atual) destinoRow.replaceChild(copia, atual);
+        else {
+          const depois = [...destinoRow.getElementsByTagName("c")].find(x => { const r = sepRef(x.getAttribute("r") || ""); return r && r.col > ra.col; });
+          destinoRow.insertBefore(copia, depois || null);
+        }
+      }
+    }
+    mc.setAttribute("data-novo", sepColLetra(ra.col) + r1 + ":" + sepColLetra(rb.col) + r2);
+  });
+
+  linhas.forEach(({ n, el }) => {
+    if (n < PRIMEIRA) return;
+    const nn = novo[n];
+    if (!nn) { el.parentNode.removeChild(el); return; }
+    el.setAttribute("r", nn);
+    let temSerie = false, uc = 0;
+    [...el.getElementsByTagName("c")].forEach(c => {
+      const ref = sepRef(c.getAttribute("r") || "");
+      const col = ref ? ref.col : uc + 1;
+      uc = col;
+      if (ref) c.setAttribute("r", sepColLetra(col) + nn);
+      // fórmula vira o valor exibido
+      [...c.getElementsByTagName("f")].forEach(f => f.parentNode.removeChild(f));
+      if (form.sc && col === form.sc) {
+        temSerie = true;
+        while (c.firstChild) c.removeChild(c.firstChild);
+        c.removeAttribute("t");
+        const v = doc.createElementNS(SEP_NS, "v");
+        v.textContent = String(nn - PRIMEIRA + 1);
+        c.appendChild(v);
+      }
+    });
+    if (form.sc && !temSerie) {
+      const c = doc.createElementNS(SEP_NS, "c");
+      c.setAttribute("r", sepColLetra(form.sc) + nn);
+      const v = doc.createElementNS(SEP_NS, "v");
+      v.textContent = String(nn - PRIMEIRA + 1);
+      c.appendChild(v);
+      const depois = [...el.getElementsByTagName("c")].find(x => { const r = sepRef(x.getAttribute("r") || ""); return r && r.col > form.sc; });
+      el.insertBefore(c, depois || null);
+    }
+  });
+
+  // intervalos (validação de dados, formatação condicional, filtro, links, mesclas)
+  const mapearIntervalo = txt => {
+    const saida = [];
+    String(txt || "").trim().split(/\s+/).filter(Boolean).forEach(pedaco => {
+      const [a, b] = pedaco.split(":");
+      const ra = sepRef(a), rb = sepRef(b || a);
+      if (!ra || !rb) return;
+      const c1 = sepColLetra(Math.min(ra.col, rb.col)), c2 = sepColLetra(Math.max(ra.col, rb.col));
+      const r1 = Math.min(ra.row, rb.row), r2 = Math.max(ra.row, rb.row);
+      const add = (x, y) => saida.push(c1 === c2 && x === y ? c1 + x : c1 + x + ":" + c2 + y);
+      if (r1 < PRIMEIRA) add(r1, Math.min(r2, PRIMEIRA - 1));
+      let ini = null, fim = null;
+      ordenados.forEach(o => {
+        if (o < r1 || o > r2) return;
+        const nn = novo[o];
+        if (ini !== null && nn === fim + 1) { fim = nn; return; }
+        if (ini !== null) add(ini, fim);
+        ini = fim = nn;
+      });
+      if (ini !== null) add(ini, fim);
+    });
+    return saida.join(" ");
+  };
+  const caixa = txt => {
+    const m = mapearIntervalo(txt);
+    if (!m) return "";
+    let r1 = Infinity, r2 = 0, c1 = Infinity, c2 = 0;
+    m.split(" ").forEach(p => p.split(":").forEach(x => { const r = sepRef(x); r1 = Math.min(r1, r.row); r2 = Math.max(r2, r.row); c1 = Math.min(c1, r.col); c2 = Math.max(c2, r.col); }));
+    return sepColLetra(c1) + r1 + ":" + sepColLetra(c2) + r2;
+  };
+  const filtroCaixa = txt => {
+    // filtro e tabela: começam no cabeçalho e vão até a última linha que ficou
+    const [a, b] = String(txt).split(":");
+    const ra = sepRef(a), rb = sepRef(b || a);
+    if (!ra || !rb) return txt;
+    if (rb.row < PRIMEIRA) return txt;
+    const ult = ordenados.length ? novo[ordenados[ordenados.length - 1]] : form.cab;
+    return sepColLetra(ra.col) + ra.row + ":" + sepColLetra(rb.col) + Math.max(ra.row, ult);
+  };
+  [...doc.getElementsByTagName("dataValidation")].forEach(dv => {
+    const m = mapearIntervalo(dv.getAttribute("sqref"));
+    if (m) dv.setAttribute("sqref", m); else tirar(dv);
+  });
+  [...doc.getElementsByTagName("conditionalFormatting")].forEach(cf => {
+    if (!cf.getAttribute("sqref")) return;
+    const m = mapearIntervalo(cf.getAttribute("sqref"));
+    if (m) cf.setAttribute("sqref", m); else tirar(cf);
+  });
+  [...doc.getElementsByTagName("xm:sqref")].forEach(x => {
+    const m = mapearIntervalo(x.textContent);
+    if (m) x.textContent = m; else tirar(x.parentNode);
+  });
+  [...doc.getElementsByTagName("selection")].forEach(s => {
+    if (s.getAttribute("sqref")) s.setAttribute("sqref", mapearIntervalo(s.getAttribute("sqref")) || "A1");
+    const ac = sepRef(s.getAttribute("activeCell") || "");
+    if (ac && !mapa(ac.row)) s.setAttribute("activeCell", "A1");
+  });
+  [...doc.getElementsByTagName("hyperlink")].forEach(h => {
+    const m = mapearIntervalo(h.getAttribute("ref"));
+    if (m && m.indexOf(" ") === -1) h.setAttribute("ref", m); else tirar(h);
+  });
+  [...doc.getElementsByTagName("mergeCell")].forEach(mc => {
+    const n = mc.getAttribute("data-novo");
+    if (n) { mc.setAttribute("ref", n); mc.removeAttribute("data-novo"); }
+  });
+  [...doc.getElementsByTagName("brk")].forEach(b => {
+    const n = mapa(Number(b.getAttribute("id")));
+    if (n) b.setAttribute("id", n); else tirar(b);
+  });
+  let filtro = "";
+  [...doc.getElementsByTagName("autoFilter")].forEach(af => { filtro = filtroCaixa(af.getAttribute("ref")); af.setAttribute("ref", filtro); });
+  [...doc.getElementsByTagName("dimension")].forEach(d => {
+    const [a, b] = String(d.getAttribute("ref")).split(":");
+    const ra = sepRef(a), rb = sepRef(b || a);
+    if (!ra || !rb) return;
+    const ult = Math.max(form.cab, ordenados.length ? novo[ordenados[ordenados.length - 1]] : 0);
+    d.setAttribute("ref", sepColLetra(ra.col) + ra.row + ":" + sepColLetra(rb.col) + Math.max(ra.row, ult));
+  });
+  ["dataValidations", "conditionalFormatting", "mergeCells", "hyperlinks", "rowBreaks"].forEach(tag => {
+    [...doc.getElementsByTagName(tag)].forEach(el => {
+      const filhos = [...el.children];
+      if (tag === "dataValidations" || tag === "mergeCells") {
+        const n = filhos.filter(x => x.localName === (tag === "mergeCells" ? "mergeCell" : "dataValidation")).length;
+        if (!n) tirar(el); else el.setAttribute("count", n);
+      } else if (tag === "rowBreaks") {
+        const n = filhos.length;
+        if (!n) tirar(el); else { el.setAttribute("count", n); el.setAttribute("manualBreakCount", n); }
+      } else if (tag === "hyperlinks" && !filhos.length) tirar(el);
+    });
+  });
+  [...doc.getElementsByTagName("x14:dataValidations")].forEach(el => {
+    const n = [...el.children].length;
+    if (!n) tirar(el); else el.setAttribute("count", n);
+  });
+  zip.file(caminho, sepTexto(doc));
+
+  // tabelas (Excel) da aba
+  const rels = await sepRels(zip, caminho);
+  if (rels) {
+    for (const r of [...rels.doc.getElementsByTagName("Relationship")]) {
+      if (!/\/table$/.test(r.getAttribute("Type") || "")) continue;
+      const tp = sepCaminho(caminho, r.getAttribute("Target"));
+      if (!zip.file(tp)) continue;
+      const td = sepXml(await zip.file(tp).async("string"));
+      const t = td.documentElement;
+      if (t.getAttribute("ref")) t.setAttribute("ref", filtroCaixa(t.getAttribute("ref")));
+      [...td.getElementsByTagName("autoFilter")].forEach(af => af.setAttribute("ref", filtroCaixa(af.getAttribute("ref"))));
+      zip.file(tp, sepTexto(td));
+    }
+  }
+
+  // filtro salvo no nome _FilterDatabase da aba
+  const wb = sepXml(await zip.file("xl/workbook.xml").async("string"));
+  let mudou = false;
+  [...wb.getElementsByTagName("definedName")].forEach(dn => {
+    if (dn.getAttribute("name") !== "_xlnm._FilterDatabase" || Number(dn.getAttribute("localSheetId")) !== form.aba.indice) return;
+    // só muda quando o filtro vai até as linhas de dados: a última linha passa a ser a última que ficou
+    const m = dn.textContent.match(/^(.*!)\$([A-Z]+)\$(\d+):\$([A-Z]+)\$(\d+)$/);
+    if (!m || Number(m[5]) < PRIMEIRA) return;
+    const ult = ordenados.length ? novo[ordenados[ordenados.length - 1]] : form.cab;
+    dn.textContent = m[1] + "$" + m[2] + "$" + m[3] + ":$" + m[4] + "$" + Math.max(Number(m[3]), ult);
+    mudou = true;
+  });
+  if (mudou) zip.file("xl/workbook.xml", sepTexto(wb));
+
+  // a cadeia de cálculo fica velha depois de tirar fórmulas: o Excel refaz sozinho
+  if (zip.file("xl/calcChain.xml")) {
+    zip.remove("xl/calcChain.xml");
+    const wr = sepXml(await zip.file("xl/_rels/workbook.xml.rels").async("string"));
+    [...wr.getElementsByTagName("Relationship")].forEach(r => { if (/calcChain/.test(r.getAttribute("Type") || "")) tirar(r); });
+    zip.file("xl/_rels/workbook.xml.rels", sepTexto(wr));
+    const ct = sepXml(await zip.file("[Content_Types].xml").async("string"));
+    [...ct.getElementsByTagName("Override")].forEach(o => { if (/calcChain/.test(o.getAttribute("PartName") || "")) tirar(o); });
+    zip.file("[Content_Types].xml", sepTexto(ct));
+  }
+  return zip.generateAsync({ type: "blob", compression: "DEFLATE", mimeType: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
+}
+
+/* ---------- tela: separar formulário ---------- */
+function sepFoneTxt(t) {
+  const d = String(t || "").replace(/\D/g, "");
+  const n = d.length > 11 && d.indexOf("55") === 0 ? d.slice(2) : d;
+  if (n.length === 11) return "(" + n.slice(0, 2) + ") " + n.slice(2, 7) + "-" + n.slice(7);
+  if (n.length === 10) return "(" + n.slice(0, 2) + ") " + n.slice(2, 6) + "-" + n.slice(6);
+  return String(t || "").trim();
+}
+
+function sepLimparTela(manterArquivo) {
+  sepUrls.forEach(u => URL.revokeObjectURL(u));
+  sepUrls = [];
+  sepAnalise = null;
+  document.getElementById("sepCasos").innerHTML = "";
+  document.getElementById("sepResultado").innerHTML = "";
+  if (!manterArquivo) {
+    sepForm = null;
+    document.getElementById("sepArquivo").value = "";
+    document.getElementById("sepDropTxt").textContent = "Escolher formulário (.xlsx)";
+    document.getElementById("sepDrop").classList.remove("com-arquivo");
+    document.getElementById("sepPrevia").innerHTML = "";
+    document.getElementById("sepBtn").disabled = true;
+  }
+}
+
+async function sepEscolheu(file) {
+  if (!file) return;
+  sepLimparTela(false);
+  document.getElementById("sepDropTxt").textContent = file.name;
+  document.getElementById("sepDrop").classList.add("com-arquivo");
+  const previa = document.getElementById("sepPrevia");
+  if (!/\.xlsx$/i.test(file.name)) {
+    previa.innerHTML = `<div class="msg-erro">Envie o formulário BYD em .xlsx (o mesmo que a BYD manda).</div>`;
+    return;
+  }
+  previa.innerHTML = `<div class="ap-previa">${ic("refresh")}<span>Lendo o formulário...</span></div>`;
+  try {
+    sepForm = await sepLerFormulario(file);
+    const f = sepForm;
+    previa.innerHTML = `
+      <div class="ap-previa ok">${ic("checkCirc")}<span><b>${f.dados.length} pessoas</b> na aba "${esc(f.aba.nome)}"
+        · nome na coluna ${sepColLetra(f.nc)}, telefone na ${sepColLetra(f.pc)}${f.ec ? `, e-mail na ${sepColLetra(f.ec)}` : ""}</span></div>`;
+    document.getElementById("sepBtn").disabled = false;
+  } catch (err) {
+    sepForm = null;
+    previa.innerHTML = `<div class="msg-erro">${esc(err.message)}</div>`;
+  }
+}
+
+/* Botão SEPARAR: antes pergunta se a lista de passageiros está atualizada */
+function sepClicouSeparar() {
+  if (!sepForm || ehByd()) return;
+  const u = apUltimaDados;
+  abertoNaGaveta = null;
+  document.getElementById("gaveta").innerHTML = `
+    <div class="fundo-gaveta" onclick="fecharGaveta()"></div>
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="sepPergunta">
+      <div class="modal-ic">${ic("alert")}</div>
+      <h3 id="sepPergunta">A lista de passageiros está atualizada? Deseja prosseguir?</h3>
+      <p>A separação usa a lista que está no portal (aba NOME_ABA).
+        ${u ? `Última atualização: <b>${esc(u.quandoTxt)}</b>${u.quando ? " (" + esc(tempoRelativo(u.quando)) + ")" : ""}${u.operador ? ", por " + esc(u.operador) : ""}.`
+            : "Não há registro de atualização pelo painel."}</p>
+      <div class="modal-botoes">
+        <button class="btn-sec" onclick="fecharGaveta()">Cancelar</button>
+        <button class="btn-ok" id="sepProsseguir" onclick="sepProsseguir()">Prosseguir</button>
+      </div>
+    </div>`;
+  setTimeout(() => { const b = document.getElementById("sepProsseguir"); if (b) b.focus(); }, 50);
+}
+
+async function sepProsseguir() {
+  fecharGaveta();
+  sepLimparTela(true);
+  const btn = document.getElementById("sepBtn");
+  const txt = btn.querySelector("span");
+  btn.disabled = true;
+  txt.textContent = "Buscando a lista de passageiros...";
+  try {
+    const r = await chamarApi({ acao: "listaPassageiros" });
+    if (r.senha === false) { sair(); return; }
+    if (!r.ok) throw new Error(r.erro === "Ação desconhecida."
+      ? "O Apps Script publicado ainda não tem a separação. Faça Implantar > Gerenciar implantações > Editar > Versão: Nova versão."
+      : r.erro || "Não foi possível ler a lista de passageiros.");
+    if (r.ultima) apMostrarUltima(r.ultima);
+    txt.textContent = "Comparando com a lista...";
+    sepAnalise = sepClassificar(sepForm.dados, r.passageiros || []);
+    sepAnalise.totalLista = r.total;
+    if (sepAnalise.casos.length) sepMostrarCasos();
+    else await sepGerar();
+  } catch (err) {
+    document.getElementById("sepResultado").innerHTML = `<div class="msg-erro">${esc(err.message)}</div>`;
+    toast(err.message, "alert", true);
+  } finally {
+    txt.textContent = "Separar";
+    btn.disabled = !sepForm;
+  }
+}
+
+/* Casos de nome diferente: o operador confirma quem é a mesma pessoa (vai para CIDADE SOL) */
+function sepMostrarCasos() {
+  const a = sepAnalise;
+  const linha = (rotulo, nome, tel, email) => `
+    <div class="sep-pessoa"><small>${rotulo}</small><b>${esc(nome)}</b>
+      <span>${ic("phone")}${esc(sepFoneTxt(tel)) || "sem telefone"}</span>
+      <span>${ic("text")}${esc(email) || "sem e-mail"}</span></div>`;
+  document.getElementById("sepCasos").innerHTML = `
+    <div class="secao sep-confirmar">
+      <h4>Confirme quem é a mesma pessoa (${a.casos.length})</h4>
+      <p class="ap-sub"><b>${a.auto.size}</b> ${a.auto.size === 1 ? "pessoa está" : "pessoas estão"} na lista com o nome igual e já ${a.auto.size === 1 ? "vai" : "vão"} para CIDADE SOL.
+        Os casos abaixo têm nome diferente: marque os que são a mesma pessoa da lista (vão para CIDADE SOL). Os desmarcados vão para LITORAL NORTE.
+        Já vêm marcados os que têm telefone ou e-mail igual <b>e</b> nome parecido.</p>
+      ${a.casos.map((c, i) => `
+        <label class="sep-caso ${c.marcado ? "sel" : ""}">
+          <input type="checkbox" data-i="${i}" ${c.marcado ? "checked" : ""} onchange="this.closest('.sep-caso').classList.toggle('sel', this.checked)">
+          <div class="sep-caso-corpo">
+            <div class="sep-motivo ${/igua/.test(c.motivo) && c.marcado ? "ok" : ""}">Linha ${c.r} do formulário · ${esc(c.motivo)}</div>
+            <div class="sep-par">
+              ${linha("No formulário", c.form.nome, c.form.tel, c.form.email)}
+              ${linha("Na lista de passageiros", c.lista.nome, c.lista.tel, c.lista.email)}
+            </div>
+          </div>
+        </label>`).join("")}
+      <div class="modal-botoes">
+        <button class="btn-sec" onclick="sepLimparTela(true)">Cancelar</button>
+        <button class="btn-ok" id="sepGerarBtn" onclick="sepGerar()">${ic("checks")}<span>Confirmar e gerar os arquivos</span></button>
+      </div>
+    </div>`;
+  document.getElementById("sepCasos").scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
+async function sepGerar() {
+  const a = sepAnalise, f = sepForm;
+  if (!a || !f) return;
+  const marcados = new Set();
+  document.querySelectorAll("#sepCasos input[type=checkbox]").forEach(cb => { if (cb.checked) marcados.add(a.casos[Number(cb.dataset.i)].r); });
+  const cs = new Set([...a.auto, ...marcados]);
+  const ln = new Set(f.dados.map(d => d.r).filter(r => !cs.has(r)));
+  const gerarBtn = document.getElementById("sepGerarBtn");
+  if (gerarBtn) { gerarBtn.disabled = true; gerarBtn.querySelector("span").textContent = "Gerando os arquivos..."; }
+  try {
+    const [b1, b2] = [await sepGerarArquivo(f, cs), await sepGerarArquivo(f, ln)];
+    const arquivos = [
+      { nome: f.base + " - CIDADE SOL.xlsx", blob: b1, n: cs.size, cor: "#15803d" },
+      { nome: f.base + " - LITORAL NORTE.xlsx", blob: b2, n: ln.size, cor: "#1d4ed8" }
+    ];
+    arquivos.forEach(x => { x.url = URL.createObjectURL(x.blob); sepUrls.push(x.url); });
+    const confirmados = a.casos.filter(c => marcados.has(c.r));
+    const recusados = a.casos.filter(c => !marcados.has(c.r));
+    const lista = (titulo, itens, txt) => itens.length ? `
+      <div class="secao"><h4>${titulo} (${itens.length})</h4>
+        <div class="lote-lista">${itens.slice(0, 40).map(txt).join("")}${itens.length > 40 ? `<div class="mais">e mais ${itens.length - 40}</div>` : ""}</div></div>` : "";
+    document.getElementById("sepCasos").innerHTML = "";
+    document.getElementById("sepResultado").innerHTML = `
+      <div class="ap-sucesso">${ic("checkCirc")}<div><b>Formulário separado!</b><span>${f.dados.length} pessoas: ${cs.size} em CIDADE SOL e ${ln.size} em LITORAL NORTE.
+        Fórmulas viraram valor e o nº de série foi refeito em cada arquivo.</span></div></div>
+      <div class="sep-downloads">${arquivos.map(x => `
+        <a class="sep-baixar" href="${x.url}" download="${esc(x.nome)}" style="--cor:${x.cor}">${ic("download")}
+          <span><b>${esc(x.nome)}</b><small>${x.n} ${x.n === 1 ? "pessoa" : "pessoas"}</small></span></a>`).join("")}</div>
+      ${lista("Entraram em CIDADE SOL com nome diferente", confirmados, c => `<div><span>${esc(c.form.nome)}</span><small>${esc(c.lista.nome)}</small></div>`)}
+      ${lista("Ficaram em LITORAL NORTE (não confirmados)", recusados, c => `<div><span>${esc(c.form.nome)}</span><small>${esc(c.lista.nome)}</small></div>`)}
+      ${lista("Nomes repetidos no formulário", a.duplicados, d => `<div><span>${esc(d.nome)}</span><small>linha ${d.r}</small></div>`)}`;
+    toast("Arquivos prontos para baixar", "download");
+  } catch (err) {
+    document.getElementById("sepResultado").innerHTML = `<div class="msg-erro">Não foi possível gerar os arquivos: ${esc(err.message)}</div>`;
+    if (gerarBtn) { gerarBtn.disabled = false; gerarBtn.querySelector("span").textContent = "Tentar de novo"; }
+  }
+}
+
+function sepArrastar(ev, dentro) {
+  ev.preventDefault();
+  document.getElementById("sepDrop").classList.toggle("arrastando", dentro);
+}
+
+function sepSoltar(ev) {
+  ev.preventDefault();
+  document.getElementById("sepDrop").classList.remove("arrastando");
+  const f = ev.dataTransfer && ev.dataTransfer.files[0];
+  if (f) sepEscolheu(f);
 }
 
 /* AVISOS */
