@@ -1564,6 +1564,9 @@ body.pdsel .toasts { bottom: 90px; }
 
 /* ATUALIZAR PORTAL */
 body.perfil-byd .vistas button[data-vista="portal"] { display: none !important; }
+.ap-destino { margin-bottom: 12px; }
+.ap-destino button { font-size: 14px; padding: 8px 14px; font-weight: bold; }
+.ap-destino button[data-destino="horaExtra"].ativo { background: #0f5f37; }
 .ap-grade { display: grid; grid-template-columns: minmax(0, 2fr) minmax(260px, 1fr); gap: 14px; align-items: start; }
 @media (max-width: 860px) { .ap-grade { grid-template-columns: 1fr; } }
 .ap-corpo { padding: 14px; }
@@ -1787,12 +1790,16 @@ body.perfil-byd .vistas button[data-vista="portal"] { display: none !important; 
 
   <!-- ATUALIZAR PORTAL (aba NOME_ABA da planilha do portal de embarque) -->
   <div id="vistaPortal" class="hidden">
+    <div class="seg ap-destino" role="tablist" aria-label="Qual lista atualizar">
+      <button class="ativo" data-destino="diario" onclick="apTrocarDestino('diario')"><i data-ic="bus"></i>Roteiros diários</button>
+      <button data-destino="horaExtra" onclick="apTrocarDestino('horaExtra')"><i data-ic="clock"></i>Hora extra</button>
+    </div>
     <div class="ap-grade">
       <section class="lista-painel">
         <div class="lista-topo">
-          <h3><i data-ic="upload"></i>Atualizar portal de embarque</h3>
+          <h3><i data-ic="upload"></i><span id="apTitulo">Atualizar portal de embarque</span></h3>
           <p class="ap-sub">Envie o arquivo de passageiros exportado do sistema (.xls ou .xlsx). O painel coloca os e-mails do banco,
-            monta o link do Google Maps pela coordenada e <b>substitui toda a lista</b> que os passageiros consultam no portal.</p>
+            monta o link do Google Maps pela coordenada e <b>substitui toda a lista <span id="apListaTxt">de roteiros diários</span></b> que os passageiros consultam no portal.</p>
           <p class="ap-sub" style="margin-bottom:2px"><b>Colunas obrigatórias no arquivo:</b></p>
           <div class="ap-colunas">
             <span>Nome Passageiro</span><span>Linha Vinculada</span><span>Ponto de Referencia</span>
@@ -1817,7 +1824,7 @@ body.perfil-byd .vistas button[data-vista="portal"] { display: none !important; 
     </div>
     <p class="hz-nota"><i data-ic="alert"></i><span>Os e-mails vêm da aba <b>Base E-mails</b> da planilha de atendimento: primeiro pelo nome
       (sem diferença de acento e maiúscula), depois pelo telefone da Obs. 1, só quando o nome também é parecido. Quem já tem e-mail no arquivo fica com ele.
-      A lista anterior do portal fica guardada na aba NOME_ABA_anterior.</span></p>
+      A lista anterior fica guardada na aba <b id="apBackupTxt">NOME_ABA_anterior</b>.</span></p>
 
     <!-- SEPARAR FORMULÁRIO BYD: CIDADE SOL x LITORAL NORTE (lista de passageiros = aba NOME_ABA do portal) -->
     <section class="lista-painel sep-bloco">
@@ -3836,6 +3843,28 @@ let apLido = null;          // { arquivo, linhas, faltando, comEmail, semCoord }
 let apUltimaDados = null;   // última atualização do portal (aparece no pop-up do Separar)
 let apEnviando = false;
 
+/* Qual lista o "Atualizar portal" substitui: roteiros diários (aba NOME_ABA) ou hora extra (aba HORA_EXTRA) */
+const AP_DESTINOS = {
+  diario:    { acao: "atualizarPortal",    status: "statusPortal",    aba: "NOME_ABA",   nome: "roteiros diários",
+               titulo: "Atualizar portal de embarque", feito: "Portal atualizado", site: "o roteiro novo" },
+  horaExtra: { acao: "atualizarHoraExtra", status: "statusHoraExtra", aba: "HORA_EXTRA", nome: "hora extra",
+               titulo: "Atualizar portal da hora extra", feito: "Hora extra atualizada", site: "a hora extra na consulta de Horas Extras" }
+};
+let apDestino = "diario";
+const apD = () => AP_DESTINOS[apDestino];
+
+function apTrocarDestino(d) {
+  if (apEnviando || !AP_DESTINOS[d] || d === apDestino) return;
+  apDestino = d;
+  document.querySelectorAll(".ap-destino button").forEach(b => b.classList.toggle("ativo", b.dataset.destino === d));
+  document.getElementById("apTitulo").textContent = apD().titulo;
+  document.getElementById("apListaTxt").textContent = "de " + apD().nome;
+  document.getElementById("apBackupTxt").textContent = apD().aba + "_anterior";
+  document.getElementById("apResultado").innerHTML = "";
+  document.getElementById("apUltima").innerHTML = `<div class="esqueleto"></div>`;
+  carregarStatusPortal();
+}
+
 function apChave(t) {
   return normalizar(t).replace(/[^a-z0-9]+/g, " ").trim();
 }
@@ -3862,7 +3891,7 @@ async function apMatriz(file) {
     const texto = new TextDecoder("utf-8").decode(buf);
     if (/<table/i.test(texto)) {
       const tabela = new DOMParser().parseFromString(texto, "text/html").querySelector("table");
-      return [...tabela.rows].map(tr => [...tr.cells].map(td => td.textContent.replace(/ /g, " ").trim()));
+      return [...tabela.rows].map(tr => [...tr.cells].map(td => td.textContent.replace(/ /g, " ").trim()));
     }
     if (!/[;,\t]/.test(texto.split(/\r?\n/)[0] || "")) throw new Error("Formato não reconhecido. Envie o .xls ou .xlsx exportado do sistema.");
     await apCarregarXlsx();
@@ -3948,16 +3977,17 @@ function apLimparArquivo() {
 async function apAtualizar(forcar) {
   if (!apLido || apEnviando || ehByd()) return;
   const n = apLido.linhas.length;
-  if (!forcar && !confirm("Substituir toda a lista do portal pelos " + n + " passageiros de \"" + apLido.arquivo + "\"?\n\n" +
-      "A lista que está no portal agora fica guardada na aba NOME_ABA_anterior.")) return;
+  const d = apD();
+  if (!forcar && !confirm("Substituir toda a lista de " + d.nome.toUpperCase() + " do portal pelos " + n + " passageiros de \"" + apLido.arquivo + "\"?\n\n" +
+      "A lista que está na aba " + d.aba + " agora fica guardada na aba " + d.aba + "_anterior.")) return;
   const btn = document.getElementById("apBtn");
   const txt = btn.querySelector("span");
   apEnviando = true;
   btn.disabled = true;
-  txt.textContent = "Atualizando o portal...";
+  txt.textContent = d === AP_DESTINOS.horaExtra ? "Atualizando a hora extra..." : "Atualizando o portal...";
   document.getElementById("apResultado").innerHTML = "";
   try {
-    const r = await chamarApi({ acao: "atualizarPortal", arquivo: apLido.arquivo, operador, forcar: !!forcar, linhas: apLido.linhas });
+    const r = await chamarApi({ acao: d.acao, arquivo: apLido.arquivo, operador, forcar: !!forcar, linhas: apLido.linhas });
     if (r.senha === false) { sair(); return; }
     if (r.confirmar) {
       apEnviando = false;
@@ -3965,12 +3995,12 @@ async function apAtualizar(forcar) {
       return;
     }
     if (!r.ok) throw new Error(r.erro === "Ação desconhecida."
-      ? "O Apps Script publicado ainda não tem a atualização do portal. Faça Implantar > Gerenciar implantações > Editar > Versão: Nova versão."
+      ? "O Apps Script publicado ainda não tem a atualização " + (d === AP_DESTINOS.horaExtra ? "da hora extra" : "do portal") + ". Faça Implantar > Gerenciar implantações > Editar > Versão: Nova versão."
       : r.erro || "Não foi possível atualizar o portal.");
-    apMostrarResultado(r);
+    apMostrarResultado(r, d);
     apMostrarUltima(r.ultima);
     apLimparArquivo();
-    toast("Portal atualizado com " + r.resumo.total + " passageiros", "check");
+    toast(d.feito + " com " + r.resumo.total + " passageiros", "check");
   } catch (err) {
     document.getElementById("apResultado").innerHTML = `<div class="msg-erro">${esc(err.message)}</div>`;
     toast(err.message, "alert", true);
@@ -3981,10 +4011,11 @@ async function apAtualizar(forcar) {
   }
 }
 
-function apMostrarResultado(r) {
+function apMostrarResultado(r, d) {
+  d = d || apD();
   const s = r.resumo;
   const nums = [
-    { n: s.total, rotulo: "Passageiros no portal", cor: "#0d2f52", fundo: "#eff6ff", icone: "user" },
+    { n: s.total, rotulo: d === AP_DESTINOS.horaExtra ? "Passageiros na hora extra" : "Passageiros no portal", cor: "#0d2f52", fundo: "#eff6ff", icone: "user" },
     { n: s.preenchidos, rotulo: "E-mails preenchidos pelo banco", cor: "#15803d", fundo: "#f0fdf4", icone: "checkCirc" },
     { n: s.jaTinham, rotulo: "Já vieram com e-mail", cor: "#1d4ed8", fundo: "#dbeafe", icone: "inbox" },
     { n: s.semEmail, rotulo: "Sem e-mail", cor: "#b45309", fundo: "#fffbeb", icone: "alert" }
@@ -3995,7 +4026,7 @@ function apMostrarResultado(r) {
         ${itens.length > 30 ? `<div class="mais">e mais ${itens.length - 30}</div>` : ""}</div>
       <p class="ap-sub">${dica}</p></div>` : "";
   document.getElementById("apResultado").innerHTML = `
-    <div class="ap-sucesso">${ic("checkCirc")}<div><b>Portal atualizado!</b><span>Os passageiros já encontram o roteiro novo no site.
+    <div class="ap-sucesso">${ic("checkCirc")}<div><b>${d.feito}!</b><span>Os passageiros já encontram ${d.site} no site.
       ${s.semMaps ? ` ${s.semMaps} ${s.semMaps === 1 ? "passageiro ficou" : "passageiros ficaram"} sem link do Maps (sem coordenada no arquivo).` : ""}</span></div></div>
     <div class="kpis ap-kpis">${nums.map(k => `
       <div class="kpi" style="--cor:${k.cor};--fundo-kpi:${k.fundo}">
@@ -4006,7 +4037,7 @@ function apMostrarResultado(r) {
 }
 
 function apMostrarUltima(u) {
-  apUltimaDados = u || null;
+  if (apDestino === "diario") apUltimaDados = u || null; // o pop-up do Separar usa só a lista dos roteiros diários
   const box = document.getElementById("apUltima");
   if (!u) {
     box.innerHTML = `<div class="vazio">${ic("history")}Nenhuma atualização feita pelo painel ainda.</div>`;
@@ -4024,11 +4055,13 @@ function carregarStatusPortal(manual) {
   if (ehByd()) return;
   const btn = document.getElementById("btnAtualizar");
   btn.classList.add("girando");
-  return chamarApi({ acao: "statusPortal" })
+  const destino = apDestino;
+  return chamarApi({ acao: AP_DESTINOS[destino].status })
     .then(r => {
       if (r.senha === false) { sair(); return; }
+      if (destino !== apDestino) return; // trocou de lista enquanto carregava
       if (!r.ok) throw new Error(r.erro === "Ação desconhecida."
-        ? "O Apps Script publicado ainda não tem a atualização do portal. Faça Implantar > Gerenciar implantações > Editar > Versão: Nova versão."
+        ? "O Apps Script publicado ainda não tem a atualização " + (destino === "horaExtra" ? "da hora extra" : "do portal") + ". Faça Implantar > Gerenciar implantações > Editar > Versão: Nova versão."
         : r.erro || "Não foi possível ler a última atualização.");
       apMostrarUltima(r.ultima);
       if (manual) toast("Última atualização carregada", "check");
@@ -4086,7 +4119,7 @@ function sepChave(t) {
 }
 /* tira sufixos como (T), (E), (2) e o que vier depois de uma barra */
 function sepLimpar(t) {
-  return String(t == null ? "" : t).replace(/[​-‏﻿]/g, "").replace(/\([^)]*\)|\[[^\]]*\]/g, " ")
+  return String(t == null ? "" : t).replace(/[-‏﻿]/g, "").replace(/\([^)]*\)|\[[^\]]*\]/g, " ")
     .replace(/\s*\/.*$/, "").replace(/\s+/g, " ").trim();
 }
 function sepFone9(t) {
