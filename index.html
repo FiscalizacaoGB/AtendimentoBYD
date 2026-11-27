@@ -1675,6 +1675,27 @@ body.perfil-master .so-nao-master { display: none !important; }
 .vs-acoes button { font-size: 12px; padding: 6px 10px; background: var(--cinza); color: var(--azul); }
 .vs-acoes button.perigo { color: var(--vermelho); background: #fef2f2; }
 .vs-pessoa { cursor: default; }
+/* janela central da vistoria (no lugar da gaveta lateral) */
+.gaveta.vs-central {
+  top: 50%; left: 50%; right: auto; bottom: auto;
+  transform: translate(-50%, -50%);
+  width: min(1180px, calc(100% - 40px)); height: min(92vh, 900px);
+  border-radius: 18px; overflow: hidden;
+  box-shadow: 0 25px 60px rgba(11,37,69,.35);
+  animation: vsSurgir .22s ease-out;
+}
+@keyframes vsSurgir { from { opacity: 0; transform: translate(-50%, -46%); } to { opacity: 1; transform: translate(-50%, -50%); } }
+.vs-central .gaveta-corpo { padding: 18px 22px; }
+.vs-colunas { display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr); gap: 22px; align-items: start; }
+.vs-colunas > div > .secao:first-child { margin-top: 0; }
+.vs-central #vsTratTexto { min-height: 170px; }
+.vs-central .gaveta-rodape { justify-content: flex-end; }
+.vs-central .gaveta-rodape button { flex: 0 0 auto; min-width: 170px; }
+@media (max-width: 860px) {
+  .gaveta.vs-central { width: 100%; height: 100%; max-height: none; border-radius: 0; }
+  .vs-colunas { grid-template-columns: 1fr; }
+  .vs-central .gaveta-rodape button { flex: 1; min-width: 0; }
+}
 .vs-pessoa:hover { transform: none; }
 
 @media (prefers-reduced-motion: reduce) {
@@ -5071,7 +5092,7 @@ function vsAbrir(protocolo, semAnim) {
 
   document.getElementById("gaveta").innerHTML = `
     <div class="fundo-gaveta ${semAnim ? "sem-anim" : ""}" onclick="fecharGaveta()"></div>
-    <aside class="gaveta ${semAnim ? "sem-anim" : ""}" role="dialog" aria-modal="true" style="--cor:${st.cor};--fundo-tipo:${st.fundo}">
+    <aside class="gaveta vs-central ${semAnim ? "sem-anim" : ""}" role="dialog" aria-modal="true" style="--cor:${st.cor};--fundo-tipo:${st.fundo}">
       <div class="gaveta-topo">
         <span class="tipo-ic">${ic(pend ? "alert" : "clipboard")}</span>
         <div>
@@ -5087,6 +5108,8 @@ function vsAbrir(protocolo, semAnim) {
               <b>${v.itensNok} ${v.itensNok === 1 ? "não conformidade" : "não conformidades"} · ${esc(st.rotulo)}</b>${esc(noks.map(c => c.item).join(", "))}</div></div>`
           : `<div class="vs-faixa-nc vs-faixa-ok">${ic("checkCirc")}<div><b>Vistoria sem não conformidade</b>Todos os ${v.itensOk} itens conformes.</div></div>`}
 
+        <div class="vs-colunas">
+        <div>
         <div class="secao">
           <h4>Vistoria</h4>
           <div class="dado">${ic("calendar")}<div><b>Data e hora</b>${esc(v.data)} ${esc(v.hora)}${v.registradaEm ? ` · registrada em ${esc(v.registradaEm)}` : ""}</div></div>
@@ -5100,11 +5123,14 @@ function vsAbrir(protocolo, semAnim) {
         ${noks.length ? `<div class="secao"><h4>Não conformidades</h4>${noks.map(c => `
           <div class="vs-nok-item">${ic("alert")}<div><b>${esc(c.item)}</b><small>${esc(c.categoria)}${c.observacao ? " · " + esc(c.observacao) : ""}</small></div></div>`).join("")}</div>` : ""}
 
-        ${tratativa}
-
-        <div class="secao"><h4>Checklist completo</h4>${checklist || "-"}</div>
-
         <div class="secao"><h4>Observações gerais</h4><div class="descricao">${esc(v.observacoes) || "(sem observações)"}</div></div>
+        </div>
+
+        <div>
+        ${tratativa}
+        <div class="secao"><h4>Checklist completo</h4>${checklist || "-"}</div>
+        </div>
+        </div>
       </div>
 
       <div class="gaveta-rodape" id="gavetaRodape">
