@@ -1641,6 +1641,42 @@ body.perfil-byd .vistas button[data-vista="portal"] { display: none !important; 
 .modal p { margin: 0; font-size: 14px; color: var(--suave); line-height: 1.45; }
 .ap-ha { font-size: 13px; color: var(--suave); margin: 2px 0 10px; }
 
+/* VISTORIAS (app de vistoria) */
+body.perfil-byd #vsModo { display: none !important; }
+body.perfil-master .so-nao-master { display: none !important; }
+.vs-modo { margin-bottom: 12px; }
+.vs-modo button { font-size: 14px; padding: 8px 14px; font-weight: bold; }
+.vs-apagado { opacity: .45; pointer-events: none; }
+.vs-lista-painel .lista { max-height: none; }
+.item.vs-alerta { background: #fff5f5; border-color: #fecaca; border-left-color: var(--vermelho); }
+.item.vs-alerta .tipo-ic { animation: vsPulso 1.6s ease-in-out infinite; }
+@keyframes vsPulso { 0%, 100% { box-shadow: 0 0 0 0 rgba(220,38,38,.35); } 50% { box-shadow: 0 0 0 7px rgba(220,38,38,0); } }
+.vs-nc { display: inline-flex; align-items: center; gap: 4px; background: var(--vermelho); color: #fff; font-size: 11px; font-weight: bold; border-radius: 8px; padding: 2px 7px; margin-right: 4px; }
+.vs-nc .ic { width: 12px; height: 12px; }
+.vs-status { font-size: 11px; font-weight: bold; padding: 3px 8px; border-radius: 10px; white-space: nowrap; background: var(--fundo-tipo); color: var(--cor); }
+.vs-faixa-nc { display: flex; gap: 10px; align-items: flex-start; background: #fef2f2; border: 1px solid #fecaca; color: #991b1b; border-radius: 12px; padding: 10px 12px; margin-bottom: 14px; font-size: 14px; }
+.vs-faixa-nc .ic { flex: 0 0 auto; margin-top: 1px; }
+.vs-faixa-nc b { display: block; }
+.vs-faixa-ok { background: #f0fdf4; border-color: #bbf7d0; color: #14532d; }
+.vs-nok-item { display: flex; gap: 10px; padding: 8px 10px; border: 1px solid #fecaca; background: #fff5f5; border-radius: 10px; margin-bottom: 6px; font-size: 14px; }
+.vs-nok-item .ic { color: var(--vermelho); flex: 0 0 auto; }
+.vs-nok-item small { display: block; color: var(--suave); font-size: 12px; }
+.vs-cat { font-size: 11px; font-weight: bold; color: var(--azul); background: #fdf1b8; border-radius: 6px; padding: 4px 8px; margin: 10px 0 4px; }
+.vs-check { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; padding: 6px 8px; border-bottom: 1px solid var(--borda); font-size: 14px; }
+.vs-check small { display: block; color: var(--suave); font-size: 12px; }
+.vs-check b { font-size: 11px; color: var(--verde); white-space: nowrap; }
+.vs-check.nok { background: #fef2f2; }
+.vs-check.nok b { color: var(--vermelho); }
+.vs-trat-botoes { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
+.vs-trat-botoes button { flex: 1; font-weight: bold; }
+.vs-trat-botoes .vs-andamento { background: #fff; color: #b45309; border: 1px solid #fcd34d; }
+.vs-trat-botoes .vs-concluir { background: var(--verde); }
+.vs-acoes { display: flex; flex-direction: column; gap: 6px; margin-top: 6px; }
+.vs-acoes button { font-size: 12px; padding: 6px 10px; background: var(--cinza); color: var(--azul); }
+.vs-acoes button.perigo { color: var(--vermelho); background: #fef2f2; }
+.vs-pessoa { cursor: default; }
+.vs-pessoa:hover { transform: none; }
+
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation: none !important; transition: none !important; }
   .check-anim circle, .check-anim path { stroke-dashoffset: 0; }
@@ -1687,6 +1723,7 @@ body.perfil-byd .vistas button[data-vista="portal"] { display: none !important; 
     <button class="ativo" data-vista="chamados" onclick="mostrarVista('chamados')"><i data-ic="inbox"></i>Chamados <span class="badge-vista" id="badgeChamados"></span></button>
     <button data-vista="horarios" onclick="mostrarVista('horarios')"><i data-ic="bus"></i>Horários<span class="so-largo">dos roteiros</span></button>
     <button data-vista="pendencias" onclick="mostrarVista('pendencias')"><i data-ic="alert"></i>Pendências <span class="badge-vista" id="badgePendencias"></span></button>
+    <button data-vista="vistorias" onclick="mostrarVista('vistorias')"><i data-ic="clipboard"></i>Vistorias <span class="badge-vista" id="badgeVistorias"></span></button>
     <button data-vista="portal" onclick="mostrarVista('portal')"><i data-ic="upload"></i>Atualizar portal</button>
   </div>
 
@@ -1851,6 +1888,53 @@ body.perfil-byd .vistas button[data-vista="portal"] { display: none !important; 
       </div>
     </section>
   </div>
+
+  <!-- VISTORIAS (app de vistoria · planilha "Vistorias – Banco de dados" · código no Vistoria.gs) -->
+  <div id="vistaVistorias" class="hidden">
+    <div class="seg vs-modo" id="vsModo" role="tablist" aria-label="Vistorias ou vistoriadores">
+      <button class="ativo" data-modo="lista" onclick="vsTrocarModo('lista')"><i data-ic="clipboard"></i>Vistorias</button>
+      <button data-modo="vistoriadores" onclick="vsTrocarModo('vistoriadores')"><i data-ic="user"></i>Vistoriadores</button>
+    </div>
+
+    <div id="vsBlocoLista">
+      <div class="hz-barra" id="vsPeriodo">
+        <div class="hz-dia">
+          <button class="btn-icone" onclick="andarPeriodo('vs', -1)" title="Período anterior" aria-label="Período anterior"><i data-ic="chevL"></i></button>
+          <label class="hz-data"><i data-ic="calendar"></i><input type="date" id="vsDe" aria-label="Data inicial" onchange="mudouPeriodo('vs', 'de')"></label>
+          <span class="hz-ate">até</span>
+          <label class="hz-data"><input type="date" id="vsAte" aria-label="Data final" onchange="mudouPeriodo('vs', 'ate')"></label>
+          <button class="btn-icone" onclick="andarPeriodo('vs', 1)" title="Próximo período" aria-label="Próximo período"><i data-ic="chevR"></i></button>
+        </div>
+        <div class="hz-atalhos">
+          <button class="chip" data-atalho="vs:0,0" onclick="definirPeriodo('vs', 0, 0)">Hoje</button>
+          <button class="chip" data-atalho="vs:-6,0" onclick="definirPeriodo('vs', -6, 0)">7 dias</button>
+          <button class="chip" data-atalho="vs:-29,0" onclick="definirPeriodo('vs', -29, 0)">30 dias</button>
+        </div>
+        <div class="busca hz-busca">
+          <i data-ic="search"></i>
+          <input type="search" id="vsBusca" placeholder="Prefixo, placa, vistoriador ou protocolo" oninput="desenharVistorias(true)">
+        </div>
+        <button class="btn-csv" id="vsCsv" onclick="baixarVistorias()" disabled><i data-ic="download"></i><span class="so-largo">Baixar</span>CSV</button>
+      </div>
+      <div class="pd-aviso hidden" id="vsAviso"></div>
+      <div class="kpis" id="vsKpis"></div>
+      <div class="seg pd-seg" id="vsSeg"></div>
+      <section class="lista-painel vs-lista-painel"><div class="lista" id="vsLista"></div></section>
+      <p class="hz-nota"><i data-ic="alert"></i><span>As vistorias vêm do app de vistoria. As que têm item não conforme aparecem em vermelho até a tratativa ser concluída.
+        A tratativa e o PDF ficam gravados na planilha "Vistorias – Banco de dados" e na pasta de PDFs do Drive.</span></p>
+    </div>
+
+    <div id="vsBlocoVistoriadores" class="hidden">
+      <section class="lista-painel vs-lista-painel">
+        <div class="lista-topo">
+          <h3><i data-ic="user"></i>Vistoriadores cadastrados <span class="contagem" id="vsvCont">0</span></h3>
+          <p class="ap-sub so-nao-master">Para liberar um novo cadastro (senha esquecida) ou bloquear um vistoriador, entre com a senha master.</p>
+          <div class="busca"><i data-ic="search"></i><input type="search" id="vsvBusca" placeholder="Nome, matrícula ou e-mail" oninput="desenharVistoriadores()"></div>
+        </div>
+        <div class="lista" id="vsvLista"></div>
+      </section>
+    </div>
+  </div>
 </main>
 
 <div class="barra-lote hidden" id="barraLote">
@@ -1948,7 +2032,10 @@ const ICONES = {
   text: '<path d="M4 6h16M4 12h16M4 18h10"/>',
   send: '<path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/>',
   link: '<path d="M10 13a5 5 0 0 0 7.5.5l3-3a5 5 0 0 0-7-7l-1.7 1.7"/><path d="M14 11a5 5 0 0 0-7.5-.5l-3 3a5 5 0 0 0 7 7l1.7-1.7"/>',
-  upload: '<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m17 8-5-5-5 5"/><path d="M12 3v12"/>'
+  upload: '<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m17 8-5-5-5 5"/><path d="M12 3v12"/>',
+  clipboard: '<rect x="8" y="2" width="8" height="4" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="m9 14 2 2 4-4"/>',
+  file: '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z"/><path d="M14 2v6h6"/><path d="M9 13h6M9 17h6"/>',
+  camera: '<path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3Z"/><circle cx="12" cy="13" r="3"/>'
 };
 
 function ic(nome) {
@@ -2066,6 +2153,7 @@ function sair() {
   try { sessionStorage.removeItem("equipeBydSenha"); sessionStorage.removeItem("equipeBydPerfil"); } catch (e) {}
   senha = "";
   perfil = "equipe";
+  vs = null; vsLista = null; vsSoPendentes = false; vsFiltro = "";
   aplicarPerfil();
   clearInterval(timer);
   fecharGaveta();
@@ -2088,12 +2176,15 @@ function abrirPainel() {
   aplicarPerfil();
   mostrarEsqueleto();
   carregar(false);
-  if (!ehByd() && ["#horarios", "#pendencias", "#portal"].indexOf(location.hash) > -1) mostrarVista(location.hash.slice(1));
+  carregarResumoVistorias();
+  if (location.hash === "#vistorias" || (!ehByd() && ["#horarios", "#pendencias", "#portal"].indexOf(location.hash) > -1)) mostrarVista(location.hash.slice(1));
   else mostrarVista("chamados");
   clearInterval(timer);
   timer = setInterval(() => {
     carregar(false, true);
     if (vista === "horarios" && document.getElementById("hzAte").value >= hojeISO()) carregarHorarios(false, true);
+    if (vista === "vistorias" && vsModoAtual === "lista" && !document.querySelector(".gaveta")) carregarVistorias(false, true);
+    else if (vista !== "vistorias") carregarResumoVistorias();
   }, ATUALIZAR_A_CADA);
 }
 
@@ -2107,7 +2198,8 @@ function aplicarPerfil() {
   if (modoLote && tipoLote === "encerrar" && !ehMaster()) alternarLote(); // encerrar em lote é só do master
   if (ehByd()) {
     if (modoLote) alternarLote();
-    if (vista !== "chamados") mostrarVista("chamados");
+    if (vista !== "chamados" && vista !== "vistorias") mostrarVista("chamados"); // BYD vê Chamados e Vistorias
+    if (vsModoAtual !== "lista") vsTrocarModo("lista");
     if (filtroEstado === "meus") filtroEstado = "";
   }
 }
@@ -2716,6 +2808,7 @@ async function encerrarLote() {
 
 function fecharGaveta() {
   abertoNaGaveta = null;
+  vsAberta = null;
   document.getElementById("gaveta").innerHTML = "";
 }
 
@@ -2800,10 +2893,10 @@ function mostrarSucessoGaveta(c, quando) {
 
 /* ================= ABAS ================= */
 let vista = "chamados";
-const VISTAS = { chamados: "vistaChamados", horarios: "vistaHorarios", pendencias: "vistaPendencias", portal: "vistaPortal" };
+const VISTAS = { chamados: "vistaChamados", horarios: "vistaHorarios", pendencias: "vistaPendencias", portal: "vistaPortal", vistorias: "vistaVistorias" };
 
 function mostrarVista(v) {
-  if (ehByd()) v = "chamados"; // BYD só vê a aba Chamados
+  if (ehByd() && v !== "vistorias") v = "chamados"; // BYD só vê as abas Chamados e Vistorias
   vista = v;
   document.querySelectorAll(".vistas button").forEach(b => b.classList.toggle("ativo", b.dataset.vista === v));
   Object.keys(VISTAS).forEach(n => document.getElementById(VISTAS[n]).classList.toggle("hidden", v !== n));
@@ -2813,6 +2906,10 @@ function mostrarVista(v) {
   if (v === "horarios" && !hz) definirPeriodo("hz", 0, 0);
   if (v === "pendencias" && !pd) { const n = -diasAteDiaUtil(); definirPeriodo("pd", n, n); }
   if (v === "portal") carregarStatusPortal();
+  if (v === "vistorias") {
+    if (!vs) definirPeriodo("vs", -6, 0);
+    vsTrocarModo(ehByd() ? "lista" : vsModoAtual);
+  }
 }
 
 /* Quantos dias voltar até o último dia de semana (seg a sex). Feriado o Apps Script avisa e sugere o dia útil. */
@@ -2823,7 +2920,8 @@ function diasAteDiaUtil() {
 }
 
 function atualizar() {
-  if (ehByd()) carregar(true);
+  if (vista === "vistorias") { if (vsModoAtual === "vistoriadores" && !ehByd()) carregarVistoriadores(true); else carregarVistorias(true); }
+  else if (ehByd()) carregar(true);
   else if (vista === "horarios") carregarHorarios(true);
   else if (vista === "pendencias") carregarPendencias(true);
   else if (vista === "portal") carregarStatusPortal(true);
@@ -2843,7 +2941,7 @@ function brDe(iso) { const p = iso.split("-"); return p[2] + "/" + p[1] + "/" + 
 function isoDeBr(br) { const p = String(br).split("/"); return p.length === 3 ? p[2] + "-" + p[1] + "-" + p[0] : ""; }
 function diaSemana(br) { return ["dom", "seg", "ter", "qua", "qui", "sex", "sáb"][new Date(isoDeBr(br) + "T12:00:00").getDay()] || ""; }
 
-/* px = "hz" (horários) ou "pd" (pendências); ini e fim em dias contados de hoje (0 = hoje, -1 = ontem) */
+/* px = "hz" (horários), "pd" (pendências) ou "vs" (vistorias); ini e fim em dias contados de hoje (0 = hoje, -1 = ontem) */
 function definirPeriodo(px, ini, fim) {
   document.getElementById(px + "De").value = somaDias(hojeISO(), ini);
   document.getElementById(px + "Ate").value = somaDias(hojeISO(), fim);
@@ -2878,7 +2976,9 @@ function recarregarPeriodo(px) {
     const [ini, fim] = b.dataset.atalho.split(":")[1].split(",").map(Number);
     b.classList.toggle("ativo", de === somaDias(h, ini) && ate === somaDias(h, fim));
   });
-  if (px === "hz") carregarHorarios(); else carregarPendencias();
+  if (px === "hz") carregarHorarios();
+  else if (px === "vs") { vsSoPendentes = false; carregarVistorias(); }
+  else carregarPendencias();
 }
 
 function baixarCsv(nome, cabecalho, linhas) {
@@ -4765,6 +4865,431 @@ function sepSoltar(ev) {
   document.getElementById("sepDrop").classList.remove("arrastando");
   const f = ev.dataTransfer && ev.dataTransfer.files[0];
   if (f) sepEscolheu(f);
+}
+
+/* ================= VISTORIAS (app de vistoria · arquivo Vistoria.gs) ================= */
+const VS_STATUS = {
+  "PENDENTE":      { rotulo: "NC pendente",   cor: "#dc2626", fundo: "#fee2e2" },
+  "EM TRATAMENTO": { rotulo: "Em tratamento", cor: "#b45309", fundo: "#fef3c7" },
+  "TRATADA":       { rotulo: "NC tratada",    cor: "#15803d", fundo: "#dcfce7" },
+  "SEM NC":        { rotulo: "Conforme",      cor: "#15803d", fundo: "#f0fdf4" }
+};
+const VS_STATUS_PESSOA = {
+  "ATIVO":     { rotulo: "Ativo",                    cor: "#15803d", fundo: "#dcfce7" },
+  "BLOQUEADO": { rotulo: "Bloqueado",                cor: "#dc2626", fundo: "#fee2e2" },
+  "LIBERADO":  { rotulo: "Liberado p/ novo cadastro", cor: "#1d4ed8", fundo: "#dbeafe" }
+};
+
+let vs = null;              // resposta do Apps Script
+let vsSoPendentes = false;  // true = lista todas as NC pendentes, de qualquer data
+let vsFiltro = "";          // "", "nc", "pendentes", "tratadas" ou "conformes"
+let vsFiltrados = [];
+let vsModoAtual = "lista";  // "lista" ou "vistoriadores"
+let vsLista = null;         // vistoriadores cadastrados
+let vsAberta = null;        // protocolo aberto na gaveta
+const vsPdfs = {};          // PDFs já baixados nesta sessão { protocolo: { nome, base64 } }
+
+function vsPendente(v) { return v.itensNok > 0 && v.status !== "TRATADA"; }
+function vsSt(v) { return VS_STATUS[v.status] || VS_STATUS[v.itensNok ? "PENDENTE" : "SEM NC"]; }
+function vsNoks(v) { return (v.checklist || []).filter(c => c.status === "NOK"); }
+function vsBadge(n) { document.getElementById("badgeVistorias").textContent = n || ""; }
+
+/* Só o número de NC pendentes (aparece na aba mesmo sem abrir) */
+function carregarResumoVistorias() {
+  chamarApi({ acao: "vistorias", resumo: true })
+    .then(r => { if (r.ok) vsBadge(r.pendentesTotal); })
+    .catch(() => {});
+}
+
+function carregarVistorias(manual, silencioso) {
+  const deCampo = document.getElementById("vsDe"), ateCampo = document.getElementById("vsAte");
+  if (!deCampo.value) deCampo.value = somaDias(hojeISO(), -6);
+  if (!ateCampo.value) ateCampo.value = hojeISO();
+  document.getElementById("vsPeriodo").classList.toggle("vs-apagado", vsSoPendentes);
+  const btn = document.getElementById("btnAtualizar");
+  btn.classList.add("girando");
+  if (!silencioso) document.getElementById("vsLista").innerHTML = '<div class="esqueleto"></div>'.repeat(4);
+  const corpo = vsSoPendentes
+    ? { acao: "vistorias", pendentes: true }
+    : { acao: "vistorias", de: brDe(deCampo.value), ate: brDe(ateCampo.value) };
+  return chamarApi(corpo)
+    .then(r => {
+      if (r.senha === false) { sair(); document.getElementById("erroLogin").textContent = r.erro; return; }
+      if (!r.ok) throw new Error(r.erro || "Erro ao carregar as vistorias.");
+      vs = r;
+      vsBadge(r.pendentesTotal);
+      desenharVistorias(silencioso);
+      if (manual) toast("Vistorias atualizadas", "check");
+    })
+    .catch(err => {
+      if (silencioso) return;
+      toast(err.message, "alert", true);
+      document.getElementById("vsLista").innerHTML = `<div class="vazio">${ic("alert")}${esc(err.message)}</div>`;
+    })
+    .finally(() => btn.classList.remove("girando"));
+}
+
+function vsVerPendentes() { vsSoPendentes = true; vsFiltro = ""; carregarVistorias(); }
+function vsVoltarPeriodo() { vsSoPendentes = false; vsFiltro = ""; carregarVistorias(); }
+
+function vsFiltrar(f, alternar) {
+  vsFiltro = alternar && vsFiltro === f ? "" : f;
+  desenharVistorias(true);
+}
+
+function desenharVistorias(semAnim) {
+  const itens = vs ? vs.itens : [];
+
+  // aviso: NC pendentes antes do período ou modo "todas as pendentes"
+  const aviso = document.getElementById("vsAviso");
+  if (vsSoPendentes) {
+    aviso.innerHTML = `${ic("alert")}<span>Mostrando <b>todas as vistorias com não conformidade sem tratativa concluída</b>, de qualquer data.</span>
+      <button class="chip" onclick="vsVoltarPeriodo()">Voltar ao período</button>`;
+  } else if (vs && vs.pendentesAntes) {
+    aviso.innerHTML = `${ic("alert")}<span><b>${vs.pendentesAntes}</b> ${vs.pendentesAntes === 1 ? "vistoria" : "vistorias"} com não conformidade pendente antes deste período.</span>
+      <button class="chip" onclick="vsVerPendentes()">Ver todas as pendentes</button>`;
+  }
+  aviso.classList.toggle("hidden", !vsSoPendentes && !(vs && vs.pendentesAntes));
+
+  // resumo
+  const comNc = itens.filter(v => v.itensNok > 0);
+  const pendentes = comNc.filter(vsPendente);
+  const tratadas = comNc.filter(v => v.status === "TRATADA");
+  const veiculos = new Set(itens.map(v => (v.prefixo || "") + "|" + (v.placa || ""))).size;
+  const kpis = [
+    { n: itens.length, rotulo: vsSoPendentes ? "Vistorias listadas" : "Vistorias no período", icone: "clipboard", cor: "#1d4ed8", fundo: "#eff6ff", filtro: "" },
+    { n: pendentes.length, rotulo: "NC aguardando tratativa", icone: "alert", cor: "#dc2626", fundo: "#fef2f2", filtro: "pendentes" },
+    { n: tratadas.length, rotulo: "NC tratadas", icone: "checkCirc", cor: "#15803d", fundo: "#f0fdf4", filtro: "tratadas" },
+    { n: veiculos, rotulo: "Veículos vistoriados", icone: "bus", cor: "#0891b2", fundo: "#ecfeff" }
+  ];
+  const box = document.getElementById("vsKpis");
+  box.innerHTML = kpis.map(k => `
+    <div class="kpi ${k.filtro !== undefined ? "clicavel" : ""} ${k.filtro && vsFiltro === k.filtro ? "ativo" : ""}"
+         style="--cor:${k.cor};--fundo-kpi:${k.fundo}" ${k.filtro !== undefined ? `onclick="vsFiltrar('${k.filtro}', true)"` : ""}>
+      <div class="kpi-ic">${ic(k.icone)}</div>
+      <div><strong data-alvo="${k.n}">${semAnim ? k.n : 0}</strong><span>${k.rotulo}</span></div>
+    </div>`).join("");
+  if (!semAnim) box.querySelectorAll("strong[data-alvo]").forEach(contarAte);
+
+  // filtro por situação
+  const regra = {
+    "": () => true,
+    nc: v => v.itensNok > 0,
+    pendentes: vsPendente,
+    tratadas: v => v.itensNok > 0 && v.status === "TRATADA",
+    conformes: v => !v.itensNok
+  };
+  const opcoes = [["", "Todas"], ["nc", "Com NC"], ["pendentes", "Pendentes"], ["tratadas", "Tratadas"], ["conformes", "Conformes"]];
+  document.getElementById("vsSeg").innerHTML = opcoes.map(([k, rotulo]) =>
+    `<button class="${vsFiltro === k ? "ativo" : ""}" onclick="vsFiltrar('${k}')">${rotulo} <b>${itens.filter(regra[k]).length}</b></button>`).join("");
+
+  // lista
+  const termo = normalizar(document.getElementById("vsBusca").value.trim());
+  vsFiltrados = itens.filter(v => regra[vsFiltro || ""](v) && (!termo ||
+    normalizar([v.protocolo, v.prefixo, v.placa, v.vistoriador, v.matricula, v.naoConformidades].join(" ")).indexOf(termo) > -1));
+  const lista = document.getElementById("vsLista");
+  lista.classList.toggle("parada", !!semAnim);
+  lista.innerHTML = vsFiltrados.length
+    ? vsFiltrados.map(vsItemHtml).join("")
+    : `<div class="vazio">${ic("checkCirc")}${itens.length ? "Nenhuma vistoria com esse filtro." : vsSoPendentes ? "Nenhuma não conformidade pendente." : "Nenhuma vistoria neste período."}</div>`;
+  document.getElementById("vsCsv").disabled = !vsFiltrados.length;
+}
+
+function vsItemHtml(v, i) {
+  const st = vsSt(v);
+  const pend = vsPendente(v);
+  const nomesNc = vsNoks(v).map(c => c.item).join(", ");
+  return `
+    <button class="item ${pend ? "vs-alerta" : ""}" style="--cor:${st.cor};--fundo-tipo:${st.fundo};animation-delay:${Math.min(i, 10) * 30}ms"
+            onclick="vsAbrir('${esc(v.protocolo)}')">
+      <span class="tipo-ic">${ic(pend ? "alert" : v.itensNok ? "checkCirc" : "clipboard")}</span>
+      <span class="item-meio">
+        <strong>Prefixo ${esc(v.prefixo)} · ${esc(v.placa)}</strong>
+        <span class="motivo">${v.itensNok
+          ? `<span class="vs-nc">${ic("alert")}${v.itensNok} ${v.itensNok === 1 ? "não conformidade" : "não conformidades"}</span>${esc(nomesNc)}`
+          : "Todos os itens conformes"}</span>
+        <span class="linha-info">
+          <span class="mono">${esc(v.protocolo)}</span>
+          <span>${ic("user")}${esc(v.vistoriador)}</span>
+          <span>${ic("calendar")}${esc(v.data)} ${esc(v.hora)}</span>
+        </span>
+      </span>
+      <span class="lado"><span class="vs-status">${esc(st.rotulo)}</span></span>
+    </button>`;
+}
+
+/* GAVETA DA VISTORIA */
+function vsAbrir(protocolo, semAnim) {
+  const v = (vs && vs.itens || []).find(x => x.protocolo === protocolo);
+  if (!v) return;
+  vsAberta = protocolo;
+  abertoNaGaveta = null;
+  const st = vsSt(v);
+  const pend = vsPendente(v);
+  const noks = vsNoks(v);
+  const p = esc(v.protocolo);
+
+  let categoria = "";
+  const checklist = (v.checklist || []).map(c => {
+    let cab = "";
+    if (c.categoria !== categoria) { categoria = c.categoria; cab = `<div class="vs-cat">${esc(categoria)}</div>`; }
+    const nok = c.status === "NOK";
+    return cab + `<div class="vs-check ${nok ? "nok" : ""}"><span>${esc(c.item)}${c.observacao ? `<small>${esc(c.observacao)}</small>` : ""}</span>
+      <b>${nok ? "NÃO CONFORME" : "CONFORME"}</b></div>`;
+  }).join("");
+
+  const registro = v.tratadoPor ? `
+    <div class="resolvido">
+      <div class="dado">${ic("flag")}<div><b>Situação</b>${esc(st.rotulo)}</div></div>
+      <div class="dado">${ic("text")}<div><b>Tratativa</b><span style="white-space:pre-wrap">${esc(v.tratativa) || "-"}</span></div></div>
+      <div class="dado">${ic("user")}<div><b>Registrado por</b>${esc(v.tratadoPor)} · ${esc(v.tratadoEm)}</div></div>
+    </div>` : "";
+
+  let tratativa = "";
+  if (v.itensNok > 0 && ehByd()) {
+    tratativa = `<div class="secao"><h4>Tratativa</h4>${registro ||
+      `<div class="faixa-resp fila">${ic("inbox")}<div><b>Aguardando tratativa</b>A operação ainda não registrou a tratativa.</div></div>`}
+      <div class="faixa-leitura">${ic("alert")}Acesso só para visualização.</div></div>`;
+  } else if (v.itensNok > 0) {
+    tratativa = `
+      <div class="secao">
+        <h4>Tratativa das não conformidades</h4>
+        ${registro}
+        <div class="form-atendimento">
+          <label for="vsTratOperador">Seu nome</label>
+          <input type="text" id="vsTratOperador" maxlength="80" value="${esc(operador)}">
+          <label for="vsTratTexto">Tratativa (o que foi feito ou combinado)</label>
+          <textarea id="vsTratTexto" maxlength="3000" placeholder="Ex.: extintor substituído, veículo recolhido para manutenção...">${esc(v.tratativa)}</textarea>
+          <div id="vsTratErro"></div>
+          <div class="vs-trat-botoes">
+            <button type="button" class="vs-andamento" id="vsBtnAndamento" onclick="vsTratar('EM TRATAMENTO')">${ic("headset")}<span>Salvar · em tratamento</span></button>
+            <button type="button" class="vs-concluir" id="vsBtnConcluir" onclick="vsTratar('TRATADA')">${ic("checks")}<span>Concluir · NC tratada</span></button>
+          </div>
+        </div>
+      </div>`;
+  }
+
+  document.getElementById("gaveta").innerHTML = `
+    <div class="fundo-gaveta ${semAnim ? "sem-anim" : ""}" onclick="fecharGaveta()"></div>
+    <aside class="gaveta ${semAnim ? "sem-anim" : ""}" role="dialog" aria-modal="true" style="--cor:${st.cor};--fundo-tipo:${st.fundo}">
+      <div class="gaveta-topo">
+        <span class="tipo-ic">${ic(pend ? "alert" : "clipboard")}</span>
+        <div>
+          <h3>Prefixo ${esc(v.prefixo)} · ${esc(v.placa)}</h3>
+          <small><span class="mono">${p}</span> · ${esc(st.rotulo)}</small>
+        </div>
+        <button class="fechar" onclick="fecharGaveta()" aria-label="Fechar">${ic("close")}</button>
+      </div>
+
+      <div class="gaveta-corpo" id="gavetaCorpo">
+        ${v.itensNok
+          ? `<div class="vs-faixa-nc ${pend ? "" : "vs-faixa-ok"}">${ic(pend ? "alert" : "checkCirc")}<div>
+              <b>${v.itensNok} ${v.itensNok === 1 ? "não conformidade" : "não conformidades"} · ${esc(st.rotulo)}</b>${esc(noks.map(c => c.item).join(", "))}</div></div>`
+          : `<div class="vs-faixa-nc vs-faixa-ok">${ic("checkCirc")}<div><b>Vistoria sem não conformidade</b>Todos os ${v.itensOk} itens conformes.</div></div>`}
+
+        <div class="secao">
+          <h4>Vistoria</h4>
+          <div class="dado">${ic("calendar")}<div><b>Data e hora</b>${esc(v.data)} ${esc(v.hora)}${v.registradaEm ? ` · registrada em ${esc(v.registradaEm)}` : ""}</div></div>
+          <div class="dado">${ic("user")}<div><b>Vistoriador</b>${esc(v.vistoriador)} · Matrícula ${esc(v.matricula)}${v.email ? ` · ${esc(v.email)}` : ""}</div></div>
+          <div class="dado">${ic("pin")}<div><b>Localização</b>${v.mapa
+            ? `<a href="${esc(v.mapa)}" target="_blank" rel="noopener">Abrir no mapa</a>${v.precisao ? ` · precisão de ${esc(v.precisao)} m` : ""}`
+            : "Não informada"}</div></div>
+          <div class="dado">${ic("camera")}<div><b>Fotos</b>${v.fotos} (estão no PDF)</div></div>
+        </div>
+
+        ${noks.length ? `<div class="secao"><h4>Não conformidades</h4>${noks.map(c => `
+          <div class="vs-nok-item">${ic("alert")}<div><b>${esc(c.item)}</b><small>${esc(c.categoria)}${c.observacao ? " · " + esc(c.observacao) : ""}</small></div></div>`).join("")}</div>` : ""}
+
+        ${tratativa}
+
+        <div class="secao"><h4>Checklist completo</h4>${checklist || "-"}</div>
+
+        <div class="secao"><h4>Observações gerais</h4><div class="descricao">${esc(v.observacoes) || "(sem observações)"}</div></div>
+      </div>
+
+      <div class="gaveta-rodape" id="gavetaRodape">
+        <button class="btn-sec" id="vsVerPdf" onclick="vsPdf('${p}', false)" ${v.temPdf ? "" : "disabled"}>${ic("file")}<span>Ver PDF</span></button>
+        <button class="btn-finalizar" id="vsSalvarPdf" onclick="vsPdf('${p}', true)" ${v.temPdf ? "" : "disabled"}>${ic("download")}<span>Salvar PDF</span></button>
+      </div>
+    </aside>`;
+  if (!semAnim) document.querySelector(".gaveta .fechar").focus();
+}
+
+function vsTratar(status) {
+  const v = (vs && vs.itens || []).find(x => x.protocolo === vsAberta);
+  if (!v || ehByd()) return;
+  const op = document.getElementById("vsTratOperador");
+  const tx = document.getElementById("vsTratTexto");
+  const erro = document.getElementById("vsTratErro");
+  op.classList.toggle("campo-erro", op.value.trim().length < 2);
+  tx.classList.toggle("campo-erro", tx.value.trim().length < 3);
+  if (op.value.trim().length < 2 || tx.value.trim().length < 3) {
+    erro.innerHTML = `<div class="msg-erro">Preencha seu nome e a tratativa.</div>`;
+    return;
+  }
+  const botoes = [document.getElementById("vsBtnAndamento"), document.getElementById("vsBtnConcluir")];
+  botoes.forEach(b => { b.disabled = true; });
+  erro.innerHTML = "";
+  const eraPendente = vsPendente(v);
+
+  chamarApi({ acao: "tratarVistoria", protocolo: v.protocolo, status: status, tratativa: tx.value.trim(), operador: op.value.trim() })
+    .then(r => {
+      if (r.senha === false) { sair(); return; }
+      if (!r.ok) throw new Error(r.erro || "Não foi possível gravar a tratativa.");
+      Object.assign(v, { status: r.status, tratativa: r.tratativa, tratadoPor: r.tratadoPor, tratadoEm: r.tratadoEm });
+      if (eraPendente && !vsPendente(v)) vs.pendentesTotal = Math.max((vs.pendentesTotal || 1) - 1, 0);
+      vsBadge(vs.pendentesTotal);
+      desenharVistorias(true);
+      vsAbrir(v.protocolo, true);
+      toast(r.status === "TRATADA" ? "Não conformidade tratada · " + v.protocolo : "Tratativa salva · " + v.protocolo, "check");
+    })
+    .catch(err => {
+      erro.innerHTML = `<div class="msg-erro">${esc(err.message)}</div>`;
+      botoes.forEach(b => { b.disabled = false; });
+    });
+}
+
+/* PDF: ver (abre em outra aba) ou salvar (baixa o arquivo) */
+function vsBlob(base64) {
+  const bin = atob(base64);
+  const bytes = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+  return new Blob([bytes], { type: "application/pdf" });
+}
+
+function vsBaixarArquivo(url, nome) {
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = nome || "vistoria.pdf";
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+}
+
+function vsPdf(protocolo, salvar) {
+  // a aba nova precisa abrir no clique, senão o navegador bloqueia
+  let janela = null;
+  if (!salvar && !vsPdfs[protocolo]) {
+    janela = window.open("", "_blank");
+    if (janela) janela.document.write('<p style="font-family:Arial;padding:20px">Carregando o PDF da vistoria ' + esc(protocolo) + '...</p>');
+  }
+  const btn = document.getElementById(salvar ? "vsSalvarPdf" : "vsVerPdf");
+  const span = btn && btn.querySelector("span");
+  const texto = span ? span.textContent : "";
+  if (btn) { btn.disabled = true; span.textContent = "Carregando..."; }
+
+  const pronto = vsPdfs[protocolo]
+    ? Promise.resolve(vsPdfs[protocolo])
+    : chamarApi({ acao: "vistoriaPdf", protocolo: protocolo }).then(r => {
+        if (r.senha === false) { sair(); throw new Error(r.erro || "Entre de novo."); }
+        if (!r.ok) throw new Error(r.erro || "Não foi possível abrir o PDF.");
+        vsPdfs[protocolo] = { nome: r.nome, base64: r.base64 };
+        return vsPdfs[protocolo];
+      });
+
+  pronto
+    .then(pdf => {
+      const url = URL.createObjectURL(vsBlob(pdf.base64));
+      if (salvar) vsBaixarArquivo(url, pdf.nome);
+      else if (janela) janela.location.href = url;
+      else if (!window.open(url, "_blank")) vsBaixarArquivo(url, pdf.nome);
+      setTimeout(() => URL.revokeObjectURL(url), 60000);
+    })
+    .catch(err => {
+      if (janela) janela.close();
+      toast(err.message, "alert", true);
+    })
+    .finally(() => {
+      const b = document.getElementById(salvar ? "vsSalvarPdf" : "vsVerPdf");
+      if (b && b === btn) { b.disabled = false; span.textContent = texto; }
+    });
+}
+
+function baixarVistorias() {
+  if (!vs) return;
+  const linhas = vsFiltrados.map(v => [v.protocolo, v.data, v.hora, v.prefixo, v.placa, v.vistoriador, v.matricula,
+    v.itensOk, v.itensNok, vsNoks(v).map(c => c.item + (c.observacao ? " (" + c.observacao + ")" : "")).join("; "),
+    vsSt(v).rotulo, v.tratativa, v.tratadoPor, v.tratadoEm, v.observacoes, v.mapa]);
+  baixarCsv("vistorias_" + (vsSoPendentes ? "pendentes" : nomePeriodo(vs.de, vs.ate)) + ".csv",
+    ["Protocolo", "Data", "Hora", "Prefixo", "Placa", "Vistoriador", "Matrícula", "Itens OK", "Itens NOK",
+      "Não conformidades", "Situação", "Tratativa", "Tratado por", "Tratado em", "Observações", "Mapa"], linhas);
+}
+
+/* VISTORIADORES */
+function vsTrocarModo(m) {
+  if (ehByd()) m = "lista";
+  vsModoAtual = m;
+  document.querySelectorAll("#vsModo button").forEach(b => b.classList.toggle("ativo", b.dataset.modo === m));
+  document.getElementById("vsBlocoLista").classList.toggle("hidden", m !== "lista");
+  document.getElementById("vsBlocoVistoriadores").classList.toggle("hidden", m !== "vistoriadores");
+  if (m === "vistoriadores") carregarVistoriadores();
+}
+
+function carregarVistoriadores(manual) {
+  const btn = document.getElementById("btnAtualizar");
+  btn.classList.add("girando");
+  if (!vsLista) document.getElementById("vsvLista").innerHTML = '<div class="esqueleto"></div>'.repeat(3);
+  return chamarApi({ acao: "vistoriadores" })
+    .then(r => {
+      if (r.senha === false) { sair(); return; }
+      if (!r.ok) throw new Error(r.erro || "Erro ao carregar os vistoriadores.");
+      vsLista = r.vistoriadores;
+      desenharVistoriadores();
+      if (manual) toast("Vistoriadores atualizados", "check");
+    })
+    .catch(err => {
+      toast(err.message, "alert", true);
+      document.getElementById("vsvLista").innerHTML = `<div class="vazio">${ic("alert")}${esc(err.message)}</div>`;
+    })
+    .finally(() => btn.classList.remove("girando"));
+}
+
+function desenharVistoriadores() {
+  const lista = vsLista || [];
+  const termo = normalizar(document.getElementById("vsvBusca").value.trim());
+  const filtrados = lista.filter(p => !termo || normalizar([p.nome, p.matricula, p.email].join(" ")).indexOf(termo) > -1);
+  document.getElementById("vsvCont").textContent = lista.length;
+  document.getElementById("vsvLista").innerHTML = filtrados.length ? filtrados.map((p, i) => {
+    const st = VS_STATUS_PESSOA[p.status] || VS_STATUS_PESSOA.ATIVO;
+    const m = esc(p.matricula);
+    const acoes = !ehMaster() ? "" : `<span class="vs-acoes">
+      ${p.status !== "LIBERADO" ? `<button onclick="vsAlterar('${m}', 'liberar')" title="Senha esquecida: refaz o primeiro acesso">Liberar novo cadastro</button>` : ""}
+      ${p.status === "BLOQUEADO" ? `<button onclick="vsAlterar('${m}', 'ativar')">Reativar</button>` : `<button class="perigo" onclick="vsAlterar('${m}', 'bloquear')">Bloquear</button>`}
+    </span>`;
+    return `
+      <div class="item vs-pessoa" style="--cor:${st.cor};--fundo-tipo:${st.fundo};animation-delay:${Math.min(i, 10) * 30}ms">
+        <span class="tipo-ic">${ic("user")}</span>
+        <span class="item-meio">
+          <strong>${esc(p.nome)}</strong>
+          <span class="motivo">Matrícula ${m} · ${esc(p.email)}</span>
+          <span class="linha-info">
+            ${p.cadastradoEm ? `<span>${ic("calendar")}Cadastro ${esc(p.cadastradoEm.split(" ")[0])}</span>` : ""}
+            ${p.ultimoAcesso ? `<span>${ic("clock")}Último acesso ${esc(p.ultimoAcesso)}</span>` : ""}
+            ${p.alteradoPor ? `<span>${ic("text")}${esc(p.alteradoPor)} · ${esc(p.alteradoEm)}</span>` : ""}
+          </span>
+        </span>
+        <span class="lado"><span class="vs-status">${esc(st.rotulo)}</span>${acoes}</span>
+      </div>`;
+  }).join("") : `<div class="vazio">${lista.length ? "Ninguém com essa busca." : "Nenhum vistoriador cadastrado ainda. O cadastro é feito no app de vistoria, em \"Primeiro acesso\"."}</div>`;
+}
+
+function vsAlterar(matricula, operacao) {
+  const p = (vsLista || []).find(x => x.matricula === matricula);
+  if (!p || !ehMaster()) return;
+  const textos = {
+    liberar: "Liberar um novo cadastro para " + p.nome + "?\n\nA senha atual deixa de valer e o celular cadastrado fica livre. A pessoa faz o \"Primeiro acesso\" de novo com a mesma matrícula.",
+    bloquear: "Bloquear " + p.nome + "?\n\nO vistoriador sai do app e não consegue mais enviar vistorias.",
+    ativar: "Reativar o acesso de " + p.nome + "?"
+  };
+  if (!confirm(textos[operacao])) return;
+  chamarApi({ acao: "alterarVistoriador", matricula: matricula, operacao: operacao, operador: operador })
+    .then(r => {
+      if (r.senha === false) { sair(); return; }
+      if (!r.ok) throw new Error(r.erro || "Não foi possível alterar.");
+      toast(p.nome.split(" ")[0] + ": " + (VS_STATUS_PESSOA[r.status] || {}).rotulo, "check");
+      carregarVistoriadores();
+    })
+    .catch(err => toast(err.message, "alert", true));
 }
 
 /* AVISOS */
